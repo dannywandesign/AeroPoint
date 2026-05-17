@@ -16,3 +16,19 @@ AeroPoint is a Mac-first, same-Wi-Fi remote control app. The MVP uses a native i
 ## First Build Target
 
 Start with the macOS backend protocol and a mock WebSocket client, then build the iOS pairing and controller UI against that protocol.
+
+## Backend in Xcode
+
+Open the backend package in Xcode:
+
+```bash
+open /Users/wany/Desktop/test/AeroPoint/macos/Package.swift
+```
+
+Command-line backend checks:
+
+```bash
+swift test --package-path /Users/wany/Desktop/test/AeroPoint/macos
+cd /Users/wany/Desktop/test/AeroPoint/macos
+xcodebuild -scheme AeroPointAgent -destination 'platform=macOS' build
+```
