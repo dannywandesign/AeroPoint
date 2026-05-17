@@ -36,7 +36,7 @@ public enum KeyModifier: String, Codable, CaseIterable, Sendable {
 
 // MARK: - Inbound responses (Mac → iPhone)
 
-public enum AeroPointResponse: Sendable {
+public enum AeroPointResponse: Equatable, Sendable {
     case helloOK(serverName: String, protocolVersion: Int)
     case ack(seq: Int)
     case error(code: String)
