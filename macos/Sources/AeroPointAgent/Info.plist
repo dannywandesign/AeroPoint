@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Hide from Dock and App Switcher — menu bar only -->
+    <key>LSUIElement</key>
+    <true/>
+
+    <!-- Required bundle keys -->
+    <key>CFBundleName</key>
+    <string>AeroPoint Agent</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.aeropoint.agent</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleShortVersionString</key>
+    <string>0.1.0</string>
+    <key>CFBundleExecutable</key>
+    <string>AeroPointAgent</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+
+    <!-- macOS minimum version -->
+    <key>LSMinimumSystemVersion</key>
+    <string>14.0</string>
+
+    <!-- Accessibility usage description (shown in System Settings) -->
+    <key>NSAccessibilityUsageDescription</key>
+    <string>AeroPoint needs Accessibility access to move the mouse and type text on your Mac from your iPhone.</string>
+
+    <!-- Local network (for WebSocket server) -->
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>AeroPoint opens a local WebSocket server so your iPhone can connect over Wi-Fi.</string>
+
+    <!-- Allow incoming network connections -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+    </dict>
+</dict>
+</plist>

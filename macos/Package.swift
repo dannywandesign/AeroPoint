@@ -13,7 +13,8 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "AeroPointAgent",
-            path: "Sources/AeroPointAgent"
+            path: "Sources/AeroPointAgent",
+            exclude: ["Info.plist"]
         ),
         .testTarget(
             name: "AeroPointAgentTests",
