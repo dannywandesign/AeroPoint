@@ -6,19 +6,22 @@ final class MenuBarController {
     private let statusItem: NSStatusItem
     private let popover = NSPopover()
     private let permissionService: AccessibilityPermissionService
+    // Keep a reference so callers can mutate it and SwiftUI reacts automatically.
+    let status: AgentStatus
 
     init(status: AgentStatus, permissionService: AccessibilityPermissionService) {
+        self.status = status
         self.permissionService = permissionService
+
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let button = statusItem.button {
-            button.title = "AeroPoint"
+            button.title = "✈ AeroPoint"
             button.action = #selector(togglePopover)
             button.target = self
         }
 
         popover.behavior = .transient
-        popover.contentSize = NSSize(width: 320, height: 260)
         popover.contentViewController = NSHostingController(
             rootView: StatusPopoverView(
                 status: status,
@@ -33,10 +36,7 @@ final class MenuBarController {
     }
 
     @objc private func togglePopover() {
-        guard let button = statusItem.button else {
-            return
-        }
-
+        guard let button = statusItem.button else { return }
         if popover.isShown {
             popover.performClose(nil)
         } else {

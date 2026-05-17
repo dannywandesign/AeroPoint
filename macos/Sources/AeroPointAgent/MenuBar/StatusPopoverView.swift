@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct StatusPopoverView: View {
-    let status: AgentStatus
+    var status: AgentStatus
     let requestAccessibilityPermission: () -> Void
     let quit: () -> Void
 
@@ -9,6 +9,15 @@ struct StatusPopoverView: View {
         VStack(alignment: .leading, spacing: 14) {
             Text("AeroPoint Agent")
                 .font(.headline)
+
+            // QR code appears only while a pairing session is active
+            if let payload = status.pairingPayload {
+                HStack {
+                    Spacer()
+                    PairingQRCodeView(payload: payload)
+                    Spacer()
+                }
+            }
 
             VStack(alignment: .leading, spacing: 8) {
                 statusRow("Server", status.serverState)
@@ -23,6 +32,7 @@ struct StatusPopoverView: View {
                 Button("Grant Access") {
                     requestAccessibilityPermission()
                 }
+                .disabled(status.accessibilityStatus == "Granted")
 
                 Spacer()
 
