@@ -30,15 +30,18 @@ public final class ClientSession {
     }
 
     public func receive(_ data: Data) throws -> ClientSessionResponse {
+        print("[Session] receive \(data.count) bytes, authenticated=\(isAuthenticated)")
         if try messageType(in: data) == "hello" {
             return try authenticate(data)
         }
 
         guard isAuthenticated else {
+            print("[Session] ⚠️ not authenticated — dropping command")
             throw ClientSessionError.notAuthenticated
         }
 
         let message = try messageValidator.validate(data)
+        print("[Session] routing message: \(message)")
         try route(message)
         return .ack(seq: message.sequence)
     }
@@ -48,14 +51,22 @@ public final class ClientSession {
         do {
             hello = try JSONDecoder().decode(HelloMessage.self, from: data)
         } catch {
+            print("[Session] ⚠️ hello decode failed: \(error)")
             throw ClientSessionError.invalidJSON
         }
 
-        guard tokenStore.token(for: hello.clientId) == hello.token else {
+        let storedToken = tokenStore.token(for: hello.clientId)
+            ?? tokenStore.token(for: "__pairing__")
+        print("[Session] hello clientId=\(hello.clientId) tokenMatch=\(storedToken == hello.token)")
+        guard storedToken == hello.token else {
             throw ClientSessionError.invalidToken
         }
 
+        // Persist the token under the real clientId so future reconnects
+        // (after Mac restarts) don't require re-scanning the QR code.
+        tokenStore.save(token: hello.token, for: hello.clientId)
         isAuthenticated = true
+        print("[Session] ✓ authenticated as \(serverName), saved token for \(hello.clientId)")
         return .helloOK(serverName: serverName, protocolVersion: 1)
     }
 

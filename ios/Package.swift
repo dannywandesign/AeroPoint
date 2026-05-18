@@ -7,16 +7,16 @@ let package = Package(
         .iOS(.v17)
     ],
     products: [
-        .library(name: "AeroPoint", targets: ["AeroPoint"])
+        .library(name: "AeroPointLib", targets: ["AeroPointLib"])
     ],
     targets: [
         .target(
-            name: "AeroPoint",
+            name: "AeroPointLib",
             path: "Sources/AeroPoint"
         ),
         .testTarget(
             name: "AeroPointTests",
-            dependencies: ["AeroPoint"],
+            dependencies: ["AeroPointLib"],
             path: "Tests/AeroPointTests"
         )
     ]

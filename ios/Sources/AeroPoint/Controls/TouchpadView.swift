@@ -57,11 +57,12 @@ public struct TouchpadView: View {
             flashRipple(at: location)
             connection.send(.mouseClick(button: .left))
         }
-        // Two-finger tap → right click
-        .onTapGesture(count: 1, coordinateSpace: .local) { }
+        // Two-finger tap / long press → right click
         .simultaneousGesture(
-            TapGesture(count: 1)
-                .simultaneously(with: TapGesture(count: 1))
+            LongPressGesture(minimumDuration: 0.4)
+                .onEnded { _ in
+                    connection.send(.mouseClick(button: .right))
+                }
         )
     }
 

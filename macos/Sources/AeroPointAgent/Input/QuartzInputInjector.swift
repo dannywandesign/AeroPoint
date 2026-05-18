@@ -1,4 +1,5 @@
 import CoreGraphics
+import AppKit
 import Foundation
 
 public final class QuartzInputInjector: InputInjector {
@@ -6,69 +7,84 @@ public final class QuartzInputInjector: InputInjector {
 
     public init(maxDelta: Double = 200) {
         self.maxDelta = maxDelta
+        print("[Injector] QuartzInputInjector created. AXTrusted=\(AXIsProcessTrusted())")
     }
 
     public func moveMouse(dx: Double, dy: Double) throws {
-        guard let event = CGEvent(source: nil) else {
-            return
-        }
-        let current = event.location
+        let trusted = AXIsProcessTrusted()
+        let screenHeight = NSScreen.main?.frame.height ?? 0
+        let current = NSEvent.mouseLocation
         let destination = CGPoint(
             x: current.x + clamp(dx),
-            y: current.y + clamp(dy)
+            y: screenHeight - (current.y - clamp(dy))
         )
-        CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: destination, mouseButton: .left)?
-            .post(tap: .cghidEventTap)
+        print("[Injector] moveMouse dx=\(dx) dy=\(dy) trusted=\(trusted) screen=\(screenHeight) from=\(current) to=\(destination)")
+        let event = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved,
+                            mouseCursorPosition: destination, mouseButton: .left)
+        if event == nil { print("[Injector] ⚠️ CGEvent creation FAILED for mouseMoved") }
+        event?.post(tap: .cgAnnotatedSessionEventTap)
+        print("[Injector] moveMouse posted")
     }
 
     public func clickMouse(button: MouseButton) throws {
-        guard let event = CGEvent(source: nil) else {
-            return
-        }
-        let position = event.location
+        let trusted = AXIsProcessTrusted()
+        let screenHeight = NSScreen.main?.frame.height ?? 0
+        let current = NSEvent.mouseLocation
+        let position = CGPoint(x: current.x, y: screenHeight - current.y)
         let cgButton: CGMouseButton = button == .left ? .left : .right
         let downType: CGEventType = button == .left ? .leftMouseDown : .rightMouseDown
-        let upType: CGEventType = button == .left ? .leftMouseUp : .rightMouseUp
-
-        CGEvent(mouseEventSource: nil, mouseType: downType, mouseCursorPosition: position, mouseButton: cgButton)?
-            .post(tap: .cghidEventTap)
-        CGEvent(mouseEventSource: nil, mouseType: upType, mouseCursorPosition: position, mouseButton: cgButton)?
-            .post(tap: .cghidEventTap)
+        let upType: CGEventType   = button == .left ? .leftMouseUp   : .rightMouseUp
+        print("[Injector] clickMouse \(button.rawValue) trusted=\(trusted) at=\(position)")
+        let down = CGEvent(mouseEventSource: nil, mouseType: downType,
+                           mouseCursorPosition: position, mouseButton: cgButton)
+        let up   = CGEvent(mouseEventSource: nil, mouseType: upType,
+                           mouseCursorPosition: position, mouseButton: cgButton)
+        if down == nil || up == nil { print("[Injector] ⚠️ CGEvent creation FAILED for click") }
+        down?.post(tap: .cgAnnotatedSessionEventTap)
+        up?.post(tap: .cgAnnotatedSessionEventTap)
+        print("[Injector] clickMouse posted")
     }
 
     public func scrollMouse(dx: Double, dy: Double) throws {
-        CGEvent(
+        print("[Injector] scrollMouse dx=\(dx) dy=\(dy)")
+        let event = CGEvent(
             scrollWheelEvent2Source: nil,
             units: .pixel,
             wheelCount: 2,
             wheel1: Int32(clamp(dy)),
             wheel2: Int32(clamp(dx)),
             wheel3: 0
-        )?
-        .post(tap: .cghidEventTap)
+        )
+        if event == nil { print("[Injector] ⚠️ CGEvent creation FAILED for scroll") }
+        event?.post(tap: .cgAnnotatedSessionEventTap)
     }
 
     public func typeText(_ text: String) throws {
+        print("[Injector] typeText: \(text.debugDescription)")
         for scalar in text.unicodeScalars {
             var value = UniChar(scalar.value)
-            let event = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: true)
-            event?.keyboardSetUnicodeString(stringLength: 1, unicodeString: &value)
-            event?.post(tap: .cghidEventTap)
+            let down = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: true)
+            down?.keyboardSetUnicodeString(stringLength: 1, unicodeString: &value)
+            down?.post(tap: .cgAnnotatedSessionEventTap)
+            let up = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: false)
+            up?.keyboardSetUnicodeString(stringLength: 1, unicodeString: &value)
+            up?.post(tap: .cgAnnotatedSessionEventTap)
         }
     }
 
     public func pressKey(_ key: KeyboardKey, modifiers: [KeyboardModifier]) throws {
         guard let keyCode = key.keyCode else {
+            print("[Injector] pressKey: no keyCode for \(key)")
             return
         }
+        print("[Injector] pressKey \(key) modifiers=\(modifiers)")
         let flags = CGEventFlags(modifiers)
         let down = CGEvent(keyboardEventSource: nil, virtualKey: keyCode, keyDown: true)
         down?.flags = flags
-        down?.post(tap: .cghidEventTap)
-
+        down?.post(tap: .cgAnnotatedSessionEventTap)
         let up = CGEvent(keyboardEventSource: nil, virtualKey: keyCode, keyDown: false)
         up?.flags = flags
-        up?.post(tap: .cghidEventTap)
+        up?.post(tap: .cgAnnotatedSessionEventTap)
     }
 
     private func clamp(_ value: Double) -> Double {

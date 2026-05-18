@@ -134,7 +134,8 @@ public final class WebSocketServer: @unchecked Sendable {
             DispatchQueue.main.async {
                 guard let self, connection === self.activeConnection else { return }
 
-                if error != nil {
+                if let error {
+                    print("[Server] receive error: \(error) — cancelling connection")
                     connection.cancel()
                     return
                 }
@@ -143,9 +144,11 @@ public final class WebSocketServer: @unchecked Sendable {
                     self.handle(data, on: connection)
                 }
 
-                if !isComplete {
-                    self.receive(from: connection)
-                }
+                // For NWConnection WebSocket, receiveMessage delivers one complete
+                // frame per call and isComplete is always true (it refers to the
+                // frame being complete, not the stream ending). We must always
+                // reschedule to receive the next message.
+                self.receive(from: connection)
             }
         }
     }

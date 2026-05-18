@@ -1,14 +1,3 @@
-#if canImport(UIKit)
-import SwiftUI
-
-@main
-public struct AeroPointApp: App {
-    public init() {}
-
-    public var body: some Scene {
-        WindowGroup {
-            AppRootView()
-        }
-    }
-}
-#endif
+// AeroPointApp.swift
+// Entry point is provided by the Xcode app target (AeroPoint.xcodeproj).
+// This file is intentionally empty — the library exports AppRootView.

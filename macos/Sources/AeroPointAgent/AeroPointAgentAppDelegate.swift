@@ -8,12 +8,14 @@ final class AeroPointAgentAppDelegate: NSObject, NSApplicationDelegate, WebSocke
     private var menuBarController: MenuBarController?
     private var server: WebSocketServer?
     private var pairingService: PairingService?
+    private var tokenStore: KeychainPairingTokenStore?
 
     // MARK: Launch
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let permissionService = AccessibilityPermissionService()
-        let tokenStore = KeychainPairingTokenStore()
+        let store = KeychainPairingTokenStore()
+        tokenStore = store
 
         let status = AgentStatus(
             serverState: "Starting…",
@@ -24,18 +26,18 @@ final class AeroPointAgentAppDelegate: NSObject, NSApplicationDelegate, WebSocke
 
         menuBarController = MenuBarController(status: status, permissionService: permissionService)
 
-        // Build server
-        let wsServer = WebSocketServer(port: kServerPort, tokenStore: tokenStore)
+        // Build server — shares the same tokenStore so auth lookups work
+        let wsServer = WebSocketServer(port: kServerPort, tokenStore: store)
         wsServer.delegate = self
         server = wsServer
         wsServer.start()
 
-        // Build pairing service (host resolved once server reports its address)
+        // PairingService host is updated once the server reports its real address
         pairingService = PairingService(
-            host: "0.0.0.0",   // updated in serverDidStart
+            host: "0.0.0.0",
             port: Int(kServerPort),
             serverName: Host.current().localizedName ?? "AeroPoint Agent",
-            tokenStore: tokenStore
+            tokenStore: store
         )
     }
 
@@ -64,21 +66,27 @@ final class AeroPointAgentAppDelegate: NSObject, NSApplicationDelegate, WebSocke
     // MARK: Private handlers
 
     private func onServerStarted(address: String, port: UInt16) {
-        guard let status = menuBarController?.status else { return }
+        guard let status = menuBarController?.status, let store = tokenStore else { return }
         status.serverState = "Running"
         status.localAddress = "\(address):\(port)"
 
-        // Rebuild pairing service with the real address and kick off pairing
-        let tokenStore = KeychainPairingTokenStore()
+        // Rebuild pairing service with the real address, reusing the shared token store
         let service = PairingService(
             host: address,
             port: Int(port),
             serverName: Host.current().localizedName ?? "AeroPoint Agent",
-            tokenStore: tokenStore
+            tokenStore: store
         )
         pairingService = service
         let session = service.startPairing()
         status.pairingPayload = session.payload
+
+        // Print pairing info to the console for manual pairing
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("AeroPoint Agent running on \(address):\(port)")
+        print("Pairing nonce : \(session.nonce)")
+        print("Full URL      : \(session.payload)")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     }
 
     private func onServerFailed(error: any Error) {

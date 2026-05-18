@@ -1,9 +1,14 @@
 import SwiftUI
+import ApplicationServices
 
 struct StatusPopoverView: View {
     var status: AgentStatus
     let requestAccessibilityPermission: () -> Void
     let quit: () -> Void
+
+    /// Fires every second while the popover is visible to re-check the
+    /// real-time accessibility trust state without needing an app restart.
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -43,6 +48,10 @@ struct StatusPopoverView: View {
         }
         .padding(16)
         .frame(width: 320)
+        .onReceive(timer) { _ in
+            // Refresh the accessibility label live — no restart needed after granting access
+            status.accessibilityStatus = AXIsProcessTrusted() ? "Granted" : "Missing — tap Grant Access"
+        }
     }
 
     private func statusRow(_ label: String, _ value: String) -> some View {

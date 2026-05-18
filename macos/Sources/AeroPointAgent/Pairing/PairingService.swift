@@ -56,11 +56,18 @@ public final class PairingService {
     public func startPairing() -> PairingSession {
         let nonce = nonceGenerator()
         activeNonce = nonce
+        // Save the nonce as a valid token immediately under the pairing sentinel key.
+        // The iPhone sends the nonce as its token in the hello message, so the server
+        // can authenticate it before completePairing() is called.
+        tokenStore.save(token: nonce, for: PairingService.pairingClientId)
         return PairingSession(
             nonce: nonce,
             payload: "aeropoint://pair?host=\(host)&port=\(port)&nonce=\(nonce)&name=\(serverName)&v=1"
         )
     }
+
+    /// The sentinel clientId used for the initial nonce-based authentication.
+    public static let pairingClientId = "__pairing__"
 
     public func completePairing(nonce: String, clientID: String) throws -> String {
         guard nonce == activeNonce else {

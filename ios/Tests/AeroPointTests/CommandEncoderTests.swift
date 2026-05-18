@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import AeroPoint
+@testable import AeroPointLib
 
 @Suite("CommandEncoder")
 struct CommandEncoderTests {

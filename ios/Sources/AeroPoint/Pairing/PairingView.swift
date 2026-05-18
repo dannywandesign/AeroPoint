@@ -10,6 +10,7 @@ public struct PairingView: View {
     @State private var showManual = false
     @State private var manualHost = ""
     @State private var manualPort = "41074"
+    @State private var manualNonce = ""
     @State private var status = ""
 
     public init(connection: AeroPointConnection, store: PairedMacStore, onPaired: @escaping (PairedMac) -> Void) {
@@ -75,6 +76,17 @@ public struct PairingView: View {
                 TextField("41074", text: $manualPort)
                     .keyboardType(.numberPad)
             }
+            Section {
+                TextField("Paste nonce from Mac console", text: $manualNonce)
+                    .autocorrectionDisabled()
+                    .autocapitalization(.none)
+                    .font(.system(.caption, design: .monospaced))
+            } header: {
+                Text("Pairing Nonce")
+            } footer: {
+                Text("Copy the nonce from the Xcode console on your Mac: look for \"Pairing nonce : …\"")
+                    .font(.caption2)
+            }
             if !status.isEmpty {
                 Section { Text(status).foregroundStyle(.secondary) }
             }
@@ -82,7 +94,7 @@ public struct PairingView: View {
                 Button("Connect") {
                     connectManual()
                 }
-                .disabled(manualHost.isEmpty)
+                .disabled(manualHost.isEmpty || manualNonce.isEmpty)
             }
         }
     }
@@ -106,13 +118,13 @@ public struct PairingView: View {
     }
 
     private func connectManual() {
-        guard let port = Int(manualPort) else { return }
+        guard let port = Int(manualPort), !manualNonce.isEmpty else { return }
         let mac = PairedMac(
             clientId: UUID().uuidString,
             host: manualHost,
             port: port,
             serverName: "Mac (\(manualHost))",
-            token: "manual"
+            token: manualNonce
         )
         finishPairing(mac)
     }
