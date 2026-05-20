@@ -6,17 +6,23 @@ AeroPoint is a **Mac-first, same-Wi-Fi remote control app**. A native iPhone app
 
 ## Quick Start
 
-### 1. Run the macOS Agent
+### 1. Run the Agent (macOS or Windows)
 
+#### For macOS:
 ```bash
 cd macos
 swift run
 ```
-
 The agent appears as **✈ AeroPoint** in your Mac's menu bar. A QR code is shown in the popover.
-
 > **First run:** Click **Grant Access** in the popover and enable AeroPoint in  
 > **System Settings → Privacy & Security → Accessibility**
+
+#### For Windows:
+```cmd
+cd windows
+dotnet run
+```
+The agent runs in the system tray. Right-click the tray icon and select **Pair iPhone...** to open the pairing QR code window.
 
 ### 2. Run the iOS App
 
@@ -39,6 +45,7 @@ Both devices must be on the **same Wi-Fi network**.
 | Directory | Description |
 |-----------|-------------|
 | `macos/` | Swift macOS menu bar agent (SPM executable, macOS 14+) |
+| `windows/`| C# Windows system tray agent (.NET 8.0, Windows 10+) |
 | `ios/` | SwiftUI iPhone app (SPM library + Xcode project, iOS 17+) |
 | `docs/` | Design specs and planning documents |
 
@@ -171,6 +178,7 @@ open ios/Package.swift
 ## MVP Split
 
 - **`macos/`** — Swift macOS menu bar agent (SPM executable, macOS 14+)
+- **`windows/`** — C# Windows system tray agent (.NET 8.0, Windows 10+)
 - **`ios/`** — SwiftUI iPhone app *(planned)*
 
 ---
