@@ -12,25 +12,22 @@ public final class QuartzInputInjector: InputInjector {
 
     public func moveMouse(dx: Double, dy: Double) throws {
         let trusted = AXIsProcessTrusted()
-        let screenHeight = NSScreen.main?.frame.height ?? 0
-        let current = NSEvent.mouseLocation
+        let current = CGEvent(source: nil)?.location ?? .zero
         let destination = CGPoint(
             x: current.x + clamp(dx),
-            y: screenHeight - (current.y - clamp(dy))
+            y: current.y + clamp(dy)
         )
-        print("[Injector] moveMouse dx=\(dx) dy=\(dy) trusted=\(trusted) screen=\(screenHeight) from=\(current) to=\(destination)")
+        print("[Injector] moveMouse dx=\(dx) dy=\(dy) trusted=\(trusted) from=\(current) to=\(destination)")
         let event = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved,
                             mouseCursorPosition: destination, mouseButton: .left)
         if event == nil { print("[Injector] ⚠️ CGEvent creation FAILED for mouseMoved") }
-        event?.post(tap: .cgAnnotatedSessionEventTap)
+        event?.post(tap: .cghidEventTap)
         print("[Injector] moveMouse posted")
     }
 
     public func clickMouse(button: MouseButton) throws {
         let trusted = AXIsProcessTrusted()
-        let screenHeight = NSScreen.main?.frame.height ?? 0
-        let current = NSEvent.mouseLocation
-        let position = CGPoint(x: current.x, y: screenHeight - current.y)
+        let position = CGEvent(source: nil)?.location ?? .zero
         let cgButton: CGMouseButton = button == .left ? .left : .right
         let downType: CGEventType = button == .left ? .leftMouseDown : .rightMouseDown
         let upType: CGEventType   = button == .left ? .leftMouseUp   : .rightMouseUp
@@ -40,8 +37,8 @@ public final class QuartzInputInjector: InputInjector {
         let up   = CGEvent(mouseEventSource: nil, mouseType: upType,
                            mouseCursorPosition: position, mouseButton: cgButton)
         if down == nil || up == nil { print("[Injector] ⚠️ CGEvent creation FAILED for click") }
-        down?.post(tap: .cgAnnotatedSessionEventTap)
-        up?.post(tap: .cgAnnotatedSessionEventTap)
+        down?.post(tap: .cghidEventTap)
+        up?.post(tap: .cghidEventTap)
         print("[Injector] clickMouse posted")
     }
 
@@ -56,7 +53,7 @@ public final class QuartzInputInjector: InputInjector {
             wheel3: 0
         )
         if event == nil { print("[Injector] ⚠️ CGEvent creation FAILED for scroll") }
-        event?.post(tap: .cgAnnotatedSessionEventTap)
+        event?.post(tap: .cghidEventTap)
     }
 
     public func typeText(_ text: String) throws {
@@ -65,10 +62,10 @@ public final class QuartzInputInjector: InputInjector {
             var value = UniChar(scalar.value)
             let down = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: true)
             down?.keyboardSetUnicodeString(stringLength: 1, unicodeString: &value)
-            down?.post(tap: .cgAnnotatedSessionEventTap)
+            down?.post(tap: .cghidEventTap)
             let up = CGEvent(keyboardEventSource: nil, virtualKey: 0, keyDown: false)
             up?.keyboardSetUnicodeString(stringLength: 1, unicodeString: &value)
-            up?.post(tap: .cgAnnotatedSessionEventTap)
+            up?.post(tap: .cghidEventTap)
         }
     }
 
@@ -81,10 +78,10 @@ public final class QuartzInputInjector: InputInjector {
         let flags = CGEventFlags(modifiers)
         let down = CGEvent(keyboardEventSource: nil, virtualKey: keyCode, keyDown: true)
         down?.flags = flags
-        down?.post(tap: .cgAnnotatedSessionEventTap)
+        down?.post(tap: .cghidEventTap)
         let up = CGEvent(keyboardEventSource: nil, virtualKey: keyCode, keyDown: false)
         up?.flags = flags
-        up?.post(tap: .cgAnnotatedSessionEventTap)
+        up?.post(tap: .cghidEventTap)
     }
 
     private func clamp(_ value: Double) -> Double {

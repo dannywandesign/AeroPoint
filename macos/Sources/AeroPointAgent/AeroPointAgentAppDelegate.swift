@@ -8,13 +8,13 @@ final class AeroPointAgentAppDelegate: NSObject, NSApplicationDelegate, WebSocke
     private var menuBarController: MenuBarController?
     private var server: WebSocketServer?
     private var pairingService: PairingService?
-    private var tokenStore: KeychainPairingTokenStore?
+    private var tokenStore: FilePairingTokenStore?
 
     // MARK: Launch
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let permissionService = AccessibilityPermissionService()
-        let store = KeychainPairingTokenStore()
+        let store = FilePairingTokenStore()
         tokenStore = store
 
         let status = AgentStatus(
