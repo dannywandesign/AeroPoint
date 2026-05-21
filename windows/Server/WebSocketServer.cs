@@ -21,7 +21,7 @@ namespace AeroPointAgent.Server
         void ClientDidDisconnect();
     }
 
-    public final class WebSocketServer
+    public sealed class WebSocketServer
     {
         private readonly ushort _port;
         private readonly IPairingTokenStore _tokenStore;
@@ -103,9 +103,11 @@ namespace AeroPointAgent.Server
             WebSocket? socket = null;
             try
             {
+                Log("ProcessClientAsync started - client physical TCP connection established");
                 Delegate?.ClientDidConnect();
 
                 socket = await PerformHandshakeAsync(client);
+                Log($"PerformHandshakeAsync finished. Socket is {(socket != null ? "active" : "null (handshake failed)")}");
                 if (socket == null)
                 {
                     CloseActiveConnection();
@@ -135,15 +137,18 @@ namespace AeroPointAgent.Server
 
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
+                        Log("Received WebSocket close request from client");
                         await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed by client", token);
                         break;
                     }
 
                     string rawMessage = Encoding.UTF8.GetString(ms.ToArray());
+                    Log($"Received raw message: {rawMessage}");
                     ms.SetLength(0); // Reset stream length for next frame
 
                     // Pass request to session state machine
                     string responseJson = _activeSession.Receive(rawMessage);
+                    Log($"Generated session response JSON: {responseJson}");
 
                     // Send response frame
                     byte[] responseBytes = Encoding.UTF8.GetBytes(responseJson);
@@ -153,16 +158,19 @@ namespace AeroPointAgent.Server
                         true,
                         token
                     );
+                    Log("Sent session response successfully over WebSocket");
 
                     // Notify delegate on authentication
                     if (_activeSession.IsAuthenticated && responseJson.Contains("\"hello_ok\""))
                     {
+                        Log("Client successfully authenticated! Invoking ClientDidAuthenticate");
                         Delegate?.ClientDidAuthenticate();
                     }
 
                     // If token authentication failed, send error and terminate connection
                     if (responseJson.Contains("\"invalid_token\""))
                     {
+                        Log("Invalid token detected! Terminating client connection...");
                         Console.WriteLine("[Server] Invalid token — terminating client connection");
                         await Task.Delay(500, token); // Allow response to flush
                         break;
@@ -171,6 +179,7 @@ namespace AeroPointAgent.Server
             }
             catch (Exception ex)
             {
+                Log($"Exception in ProcessClientAsync: {ex}");
                 Console.WriteLine($"[Server] Error processing client: {ex.Message}");
             }
             finally
@@ -187,18 +196,34 @@ namespace AeroPointAgent.Server
             try
             {
                 var stream = client.GetStream();
-                var reader = new StreamReader(stream, Encoding.UTF8);
-                var writer = new StreamWriter(stream, Encoding.UTF8) { AutoFlush = true };
+                var headerBytes = new List<byte>();
+                int b;
 
-                string? line;
+                // Read byte-by-byte from the network stream until we hit \r\n\r\n.
+                // Since this runs in a background Task, a blocking synchronous read is safe and ensures zero over-reading.
+                while ((b = stream.ReadByte()) != -1)
+                {
+                    headerBytes.Add((byte)b);
+                    if (headerBytes.Count >= 4 &&
+                        headerBytes[headerBytes.Count - 4] == 13 &&
+                        headerBytes[headerBytes.Count - 3] == 10 &&
+                        headerBytes[headerBytes.Count - 2] == 13 &&
+                        headerBytes[headerBytes.Count - 1] == 10)
+                    {
+                        break;
+                    }
+                }
+
+                string headerString = Encoding.UTF8.GetString(headerBytes.ToArray());
+                string[] lines = headerString.Split(new[] { "\r\n" }, StringSplitOptions.None);
                 string? webSocketKey = null;
 
-                while ((line = await reader.ReadLineAsync()) != null)
+                foreach (var line in lines)
                 {
-                    if (line == "") break; // Blank line marks end of headers
                     if (line.StartsWith("Sec-WebSocket-Key:", StringComparison.OrdinalIgnoreCase))
                     {
                         webSocketKey = line.Substring("Sec-WebSocket-Key:".Length).Trim();
+                        break;
                     }
                 }
 
@@ -215,13 +240,16 @@ namespace AeroPointAgent.Server
                 );
                 string acceptKey = Convert.ToBase64String(sha1Bytes);
 
-                // Write the upgrade HTTP response
-                await writer.WriteAsync(
+                // Write the upgrade HTTP response directly to the raw stream
+                string response =
                     "HTTP/1.1 101 Switching Protocols\r\n" +
                     "Upgrade: websocket\r\n" +
                     "Connection: Upgrade\r\n" +
-                    "Sec-WebSocket-Accept: " + acceptKey + "\r\n\r\n"
-                );
+                    "Sec-WebSocket-Accept: " + acceptKey + "\r\n\r\n";
+                
+                byte[] responseBytes = Encoding.UTF8.GetBytes(response);
+                await stream.WriteAsync(responseBytes, 0, responseBytes.Length);
+                await stream.FlushAsync();
 
                 return WebSocket.CreateFromStream(stream, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromSeconds(30));
             }
@@ -263,15 +291,26 @@ namespace AeroPointAgent.Server
         {
             try
             {
+                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+                {
+                    socket.Connect("8.8.8.8", 65530);
+                    if (socket.LocalEndPoint is IPEndPoint endPoint)
+                    {
+                        return endPoint.Address.ToString();
+                    }
+                }
+            }
+            catch {}
+
+            try
+            {
                 foreach (var ni in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
                 {
-                    if (ni.OperationalStatus == System.Net.NetworkInformation.OperationalStatus.Up &&
-                        (ni.NetworkInterfaceType == System.Net.NetworkInformation.NetworkInterfaceType.Wireless80211 ||
-                         ni.NetworkInterfaceType == System.Net.NetworkInformation.NetworkInterfaceType.Ethernet))
+                    if (ni.OperationalStatus == System.Net.NetworkInformation.OperationalStatus.Up)
                     {
                         foreach (var ip in ni.GetIPProperties().UnicastAddresses)
                         {
-                            if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+                            if (ip.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(ip.Address))
                             {
                                 return ip.Address.ToString();
                             }
@@ -284,6 +323,16 @@ namespace AeroPointAgent.Server
                 Console.WriteLine($"[Server] Error getting local IP: {ex.Message}");
             }
             return null;
+        }
+
+        public static void Log(string message)
+        {
+            try
+            {
+                string logPath = @"C:\Users\danny\AeroPoint\windows\aeropoint.log";
+                File.AppendAllText(logPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}\r\n");
+            }
+            catch {}
         }
     }
 }

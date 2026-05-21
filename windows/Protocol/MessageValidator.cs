@@ -6,7 +6,7 @@ using AeroPointAgent.Input;
 
 namespace AeroPointAgent.Protocol
 {
-    public final class MessageValidator
+    public sealed class MessageValidator
     {
         private readonly HashSet<int> _seenSequences = new();
 

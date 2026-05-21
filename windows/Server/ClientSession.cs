@@ -29,7 +29,7 @@ namespace AeroPointAgent.Server
         }
     }
 
-    public final class ClientSession
+    public sealed class ClientSession
     {
         private readonly IPairingTokenStore _tokenStore;
         private readonly IInputInjector _inputInjector;

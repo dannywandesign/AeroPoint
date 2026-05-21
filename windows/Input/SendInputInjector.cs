@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace AeroPointAgent.Input
 {
-    public final class SendInputInjector : IInputInjector
+    public sealed class SendInputInjector : IInputInjector
     {
         private readonly double _maxDelta;
 

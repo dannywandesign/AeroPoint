@@ -8,7 +8,7 @@ using QRCoder;
 
 namespace AeroPointAgent.UI
 {
-    public final class PairingForm : Form
+    public sealed class PairingForm : Form
     {
         private readonly PairingService _pairingService;
         private readonly IPairingTokenStore _tokenStore;

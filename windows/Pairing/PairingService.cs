@@ -15,7 +15,7 @@ namespace AeroPointAgent.Pairing
         }
     }
 
-    public final class PairingService
+    public sealed class PairingService
     {
         private readonly string _host;
         private readonly int _port;

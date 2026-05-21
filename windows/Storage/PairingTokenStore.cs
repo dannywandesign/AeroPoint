@@ -11,7 +11,7 @@ namespace AeroPointAgent.Storage
         string? GetToken(string clientId);
     }
 
-    public final class FilePairingTokenStore : IPairingTokenStore
+    public sealed class FilePairingTokenStore : IPairingTokenStore
     {
         private readonly string _filePath;
 

@@ -36,15 +36,16 @@ namespace AeroPointAgent
             // Set up tray icon and menu
             InitializeTrayIcon();
 
-            // Start WebSocket server on default port 41074
+            // Initialize pairing service with local IP or fallback
             ushort port = 41074;
+            string serverName = System.Net.Dns.GetHostName();
+            string initialIp = WebSocketServer.GetLocalIPAddress() ?? "127.0.0.1";
+            _pairingService = new PairingService(initialIp, port, serverName, _tokenStore);
+
+            // Start WebSocket server on default port 41074
             _server = new WebSocketServer(port, _tokenStore);
             _server.Delegate = new ServerDelegate();
             _server.Start();
-
-            // Initialize pairing service with local hostname as server name
-            string serverName = System.Net.Dns.GetHostName();
-            _pairingService = new PairingService("127.0.0.1", port, serverName, _tokenStore);
 
             Application.Run();
 

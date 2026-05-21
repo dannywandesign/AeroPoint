@@ -24,7 +24,7 @@ namespace AeroPointAgent.Protocol
         }
     }
 
-    public final class MouseMoveMessage : AeroPointMessage
+    public sealed class MouseMoveMessage : AeroPointMessage
     {
         public double Dx { get; }
         public double Dy { get; }
@@ -36,7 +36,7 @@ namespace AeroPointAgent.Protocol
         }
     }
 
-    public final class MouseClickMessage : AeroPointMessage
+    public sealed class MouseClickMessage : AeroPointMessage
     {
         public MouseButton Button { get; }
 
@@ -46,7 +46,7 @@ namespace AeroPointAgent.Protocol
         }
     }
 
-    public final class MouseScrollMessage : AeroPointMessage
+    public sealed class MouseScrollMessage : AeroPointMessage
     {
         public double Dx { get; }
         public double Dy { get; }
@@ -58,7 +58,7 @@ namespace AeroPointAgent.Protocol
         }
     }
 
-    public final class KeyboardTextMessage : AeroPointMessage
+    public sealed class KeyboardTextMessage : AeroPointMessage
     {
         public string Text { get; }
 
@@ -68,7 +68,7 @@ namespace AeroPointAgent.Protocol
         }
     }
 
-    public final class KeyboardKeyMessage : AeroPointMessage
+    public sealed class KeyboardKeyMessage : AeroPointMessage
     {
         public KeyboardKey Key { get; }
         public List<KeyboardModifier> Modifiers { get; }
