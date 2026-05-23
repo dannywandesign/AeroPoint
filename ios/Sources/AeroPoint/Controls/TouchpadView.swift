@@ -23,19 +23,55 @@ public struct TouchpadView: View {
 
     public var body: some View {
         ZStack {
-            // Background
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemGray6))
+            // Touchpad Surface Card
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color.white.opacity(0.025))
+                .overlay(
+                    // Subtle Grid Texture
+                    TouchpadGridPattern()
+                        .stroke(Color.white.opacity(0.015), lineWidth: 1)
+                )
+                .overlay(
+                    // Inner Shadow/Glow effect
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(
+                            LinearGradient(
+                                colors: isDragging ? 
+                                    [Color(red: 99/255, green: 102/255, blue: 241/255), Color(red: 124/255, green: 58/255, blue: 237/255)] : 
+                                    [Color.white.opacity(0.08), Color.white.opacity(0.02)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.5
+                        )
+                )
+                .shadow(color: isDragging ? Color(red: 99/255, green: 102/255, blue: 241/255).opacity(0.12) : .clear, radius: 12, x: 0, y: 0)
 
-            Text("Touchpad")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+            // Touchpad Label indicator
+            VStack {
+                Spacer()
+                HStack(spacing: 8) {
+                    Image(systemName: isDragging ? "hand.draw.fill" : "hand.and.arrow.leading.and.trailing")
+                    Text(isDragging ? "DRAGGING ACTIVE" : "PRECISION TOUCHPAD")
+                }
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .foregroundStyle(isDragging ? Color(red: 99/255, green: 102/255, blue: 241/255) : Color.white.opacity(0.2))
+                .tracking(2)
+                .padding(.bottom, 20)
+            }
 
-            // Click ripple feedback
+            // Click ripple feedback animation
             if showRipple {
                 Circle()
-                    .fill(Color.accentColor.opacity(0.25))
-                    .frame(width: 60, height: 60)
+                    .fill(
+                        RadialGradient(
+                            colors: [Color(red: 99/255, green: 102/255, blue: 241/255).opacity(0.4), .clear],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: 30
+                        )
+                    )
+                    .frame(width: 80, height: 80)
                     .position(rippleLocation)
                     .transition(.opacity)
                     .animation(.easeOut(duration: 0.3), value: showRipple)
@@ -85,6 +121,32 @@ public struct TouchpadView: View {
     }
 }
 
+/// A subtle engineering grid pattern for the touchpad view.
+struct TouchpadGridPattern: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let spacing: CGFloat = 36
+        
+        // Vertical grid lines
+        var x = rect.minX + spacing
+        while x < rect.maxX {
+            path.move(to: CGPoint(x: x, y: rect.minY))
+            path.addLine(to: CGPoint(x: x, y: rect.maxY))
+            x += spacing
+        }
+        
+        // Horizontal grid lines
+        var y = rect.minY + spacing
+        while y < rect.maxY {
+            path.move(to: CGPoint(x: rect.minX, y: y))
+            path.addLine(to: CGPoint(x: rect.maxX, y: y))
+            y += spacing
+        }
+        
+        return path
+    }
+}
+
 /// Horizontal scroll strip at the bottom of the controller.
 public struct ScrollStripView: View {
     let connection: AeroPointConnection
@@ -96,14 +158,46 @@ public struct ScrollStripView: View {
     }
 
     public var body: some View {
-        RoundedRectangle(cornerRadius: 10)
-            .fill(Color(.systemGray5))
+        RoundedRectangle(cornerRadius: 16)
+            .fill(Color.white.opacity(0.03))
+            .frame(height: 52)
             .overlay(
-                Text("Scroll")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                // Inner groove tracking line
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.white.opacity(0.06))
+                    .frame(height: 6)
+                    .padding(.horizontal, 24)
             )
-            .frame(height: 44)
+            .overlay(
+                HStack {
+                    Image(systemName: "chevron.left")
+                    Spacer()
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.up.and.down.circle.fill")
+                            .font(.system(size: 14))
+                        Text("SCROLL STRIP")
+                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                            .tracking(2)
+                    }
+                    .foregroundStyle(Color.white.opacity(0.3))
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                }
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(Color.white.opacity(0.15))
+                .padding(.horizontal, 20)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.08), Color.white.opacity(0.02)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 1
+                    )
+            )
             .gesture(
                 DragGesture(minimumDistance: 1)
                     .onChanged { value in
