@@ -1,7 +1,8 @@
 #if canImport(UIKit)
 import SwiftUI
+import UIKit
 
-/// Full-screen touchpad: one-finger drag = mouse move, double-tap-and-drag = drag and drop.
+/// Full-screen touchpad: one-finger drag = mouse move, two-finger drag = drag and drop.
 public struct TouchpadView: View {
     let connection: AeroPointConnection
     @AppStorage("isDarkMode") private var isDarkMode = false
@@ -10,12 +11,8 @@ public struct TouchpadView: View {
     private let moveSensitivity: Double = 1.8
     private let scrollSensitivity: Double = 0.6
 
-    @State private var lastDragLocation: CGPoint? = nil
     @State private var rippleLocation: CGPoint = .zero
     @State private var showRipple = false
-
-    // Tap tracking for double-tap-to-drag
-    @State private var lastTapTime = Date.distantPast
     @State private var isDragging = false
 
     public init(connection: AeroPointConnection) {
@@ -77,40 +74,17 @@ public struct TouchpadView: View {
                     .transition(.opacity)
                     .animation(.easeOut(duration: 0.3), value: showRipple)
             }
-        }
-        // One-finger drag → mouse move (or drag-and-drop if double-tapped)
-        .gesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { value in
-                    let now = Date()
-                    if lastDragLocation == nil {
-                        // Gesture start: detect double-tap
-                        if now.timeIntervalSince(lastTapTime) < 0.3 {
-                            isDragging = true
-                            connection.send(.mouseDown(button: .left))
-                            flashRipple(at: value.startLocation)
-                        } else {
-                            isDragging = false
-                        }
-                    }
 
-                    if let last = lastDragLocation {
-                        let dx = (value.location.x - last.x) * moveSensitivity
-                        let dy = (value.location.y - last.y) * moveSensitivity
-                        connection.send(.mouseMove(dx: dx, dy: dy))
-                    }
-                    lastDragLocation = value.location
-                }
-                .onEnded { _ in
-                    if isDragging {
-                        connection.send(.mouseUp(button: .left))
-                        isDragging = false
-                    } else {
-                        lastTapTime = Date()
-                    }
-                    lastDragLocation = nil
-                }
-        )
+            // Transparent multi-touch overlay
+            MultiTouchTouchpadRepresentable(
+                connection: connection,
+                moveSensitivity: moveSensitivity,
+                isDragging: $isDragging
+            ) { point in
+                flashRipple(at: point)
+            }
+            .cornerRadius(24)
+        }
     }
 
     private func flashRipple(at point: CGPoint) {
@@ -118,6 +92,103 @@ public struct TouchpadView: View {
         withAnimation { showRipple = true }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             withAnimation { showRipple = false }
+        }
+    }
+}
+
+/// Transparent UIKit representable to capture high-performance 1-finger move and 2-finger drag pan gestures.
+struct MultiTouchTouchpadRepresentable: UIViewRepresentable {
+    let connection: AeroPointConnection
+    let moveSensitivity: Double
+    @Binding var isDragging: Bool
+    let onDragStarted: (CGPoint) -> Void
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.backgroundColor = .clear
+        view.isOpaque = false
+
+        let pan = UIPanGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handlePan(_:)))
+        pan.minimumNumberOfTouches = 1
+        pan.maximumNumberOfTouches = 2
+        view.addGestureRecognizer(pan)
+
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        let coordinator = Coordinator(connection: connection, moveSensitivity: moveSensitivity)
+        coordinator.onDragStateChanged = { dragging in
+            isDragging = dragging
+        }
+        coordinator.onDragStarted = { point in
+            onDragStarted(point)
+        }
+        return coordinator
+    }
+
+    class Coordinator: NSObject {
+        let connection: AeroPointConnection
+        let moveSensitivity: Double
+        var onDragStateChanged: ((Bool) -> Void)?
+        var onDragStarted: ((CGPoint) -> Void)?
+
+        private var lastLocation: CGPoint = .zero
+        private var isDragging = false
+
+        init(connection: AeroPointConnection, moveSensitivity: Double) {
+            self.connection = connection
+            self.moveSensitivity = moveSensitivity
+        }
+
+        @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
+            guard let view = gesture.view else { return }
+            let location = gesture.location(in: view)
+            let touchesCount = gesture.numberOfTouches
+
+            switch gesture.state {
+            case .began:
+                lastLocation = location
+                if touchesCount == 2 {
+                    isDragging = true
+                    connection.send(.mouseDown(button: .left))
+                    onDragStateChanged?(true)
+                    onDragStarted?(location)
+                } else {
+                    isDragging = false
+                    onDragStateChanged?(false)
+                }
+
+            case .changed:
+                let dx = (location.x - lastLocation.x) * moveSensitivity
+                let dy = (location.y - lastLocation.y) * moveSensitivity
+                connection.send(.mouseMove(dx: dx, dy: dy))
+                lastLocation = location
+
+                // Dynamic touch additions and removals during active pan
+                if !isDragging && touchesCount == 2 {
+                    isDragging = true
+                    connection.send(.mouseDown(button: .left))
+                    onDragStateChanged?(true)
+                    onDragStarted?(location)
+                } else if isDragging && touchesCount < 2 {
+                    isDragging = false
+                    connection.send(.mouseUp(button: .left))
+                    onDragStateChanged?(false)
+                }
+
+            case .ended, .cancelled, .failed:
+                if isDragging {
+                    isDragging = false
+                    connection.send(.mouseUp(button: .left))
+                    onDragStateChanged?(false)
+                }
+
+            default:
+                break
+            }
         }
     }
 }
