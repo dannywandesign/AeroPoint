@@ -17,8 +17,6 @@
     <string>0.1.0</string>
     <key>CFBundleExecutable</key>
     <string>AeroPointAgent</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
 
     <!-- macOS minimum version -->
     <key>LSMinimumSystemVersion</key>
