@@ -1,4 +1,5 @@
 import AppKit
+import CoreImage.CIFilterBuiltins
 
 private let kServerPort: UInt16 = 41_074
 
@@ -87,6 +88,60 @@ final class AeroPointAgentAppDelegate: NSObject, NSApplicationDelegate, WebSocke
         print("Pairing nonce : \(session.nonce)")
         print("Full URL      : \(session.payload)")
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        fflush(stdout)
+
+        // Auto-show menu bar popover to display QR code to user in UI
+        menuBarController?.showPopover()
+
+        // Print scannable ASCII QR code in terminal for CLI execution
+        printConsoleQRCode(from: session.payload)
+    }
+
+    private func printConsoleQRCode(from string: String) {
+        let context = CIContext()
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(string.utf8)
+        filter.correctionLevel = "L"
+
+        guard let ciImage = filter.outputImage else { return }
+        guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
+        
+        let width = cgImage.width
+        let height = cgImage.height
+        
+        guard let dataProvider = cgImage.dataProvider,
+              let pixelData = dataProvider.data else { return }
+        let data: UnsafePointer<UInt8> = CFDataGetBytePtr(pixelData)
+        let bytesPerPixel = cgImage.bitsPerPixel / 8
+        let bytesPerRow = cgImage.bytesPerRow
+        
+        print("\nScan this QR code with the AeroPoint iPhone app to pair:")
+        let border = 2
+        
+        for _ in 0..<border {
+            print(String(repeating: "██", count: width + 2 * border))
+        }
+        
+        for y in 0..<height {
+            var rowString = String(repeating: "██", count: border)
+            for x in 0..<width {
+                let offset = y * bytesPerRow + x * bytesPerPixel
+                let value = data[offset]
+                if value < 128 {
+                    rowString += "  "
+                } else {
+                    rowString += "██"
+                }
+            }
+            rowString += String(repeating: "██", count: border)
+            print(rowString)
+        }
+        
+        for _ in 0..<border {
+            print(String(repeating: "██", count: width + 2 * border))
+        }
+        print("\n")
+        fflush(stdout)
     }
 
     private func onServerFailed(error: any Error) {

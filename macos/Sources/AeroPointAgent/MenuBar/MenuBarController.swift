@@ -43,4 +43,9 @@ final class MenuBarController {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         }
     }
+
+    func showPopover() {
+        guard let button = statusItem.button, !popover.isShown else { return }
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+    }
 }
