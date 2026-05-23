@@ -107,7 +107,7 @@ public struct PairingView: View {
 
             // Glowing Focus Target Frame
             ScannerTargetFrameView()
-                .frame(width: 266, height: 266)
+                .frame(width: 260, height: 260)
 
             VStack {
                 Spacer()
@@ -338,19 +338,17 @@ struct ScannerTargetFrameView: View {
 
     var body: some View {
         ZStack {
-            // Corner indicators
-            ForEach(0..<4) { index in
-                ScannerCornerShape()
-                    .stroke(
-                        LinearGradient(
-                            colors: [Color(red: 99/255, green: 102/255, blue: 241/255), Color(red: 124/255, green: 58/255, blue: 237/255)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 4
-                    )
-                    .rotationEffect(.degrees(Double(index) * 90))
-            }
+            // Continuous glowing rounded rectangle border
+            RoundedRectangle(cornerRadius: 24)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color(red: 99/255, green: 102/255, blue: 241/255), Color(red: 124/255, green: 58/255, blue: 237/255)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 3
+                )
+                .shadow(color: Color(red: 99/255, green: 102/255, blue: 241/255).opacity(0.35), radius: 8)
 
             // Pulsing center line
             Rectangle()
@@ -362,36 +360,12 @@ struct ScannerTargetFrameView: View {
                     )
                 )
                 .frame(height: 2)
-                .offset(y: isPulsing ? 120 : -120)
+                .offset(y: isPulsing ? 110 : -110)
                 .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: isPulsing)
         }
         .onAppear {
             isPulsing = true
         }
-    }
-}
-
-struct ScannerCornerShape: Shape {
-    let radius: CGFloat = 27
-    
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let length: CGFloat = 24 + radius
-        
-        path.move(to: CGPoint(x: rect.minX, y: rect.minY + length))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + radius))
-        
-        path.addArc(
-            center: CGPoint(x: rect.minX + radius, y: rect.minY + radius),
-            radius: radius,
-            startAngle: .degrees(180),
-            endAngle: .degrees(270),
-            clockwise: false
-        )
-        
-        path.addLine(to: CGPoint(x: rect.minX + length, y: rect.minY))
-        
-        return path
     }
 }
 #endif
