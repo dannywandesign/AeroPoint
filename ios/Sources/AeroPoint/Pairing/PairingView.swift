@@ -98,6 +98,7 @@ public struct PairingView: View {
             // Glowing Focus Target Frame
             ScannerTargetFrameView()
                 .frame(width: 260, height: 260)
+                .offset(y: -50)
 
             VStack {
                 Spacer()
