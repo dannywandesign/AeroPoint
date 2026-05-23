@@ -7,6 +7,7 @@ public struct AppRootView: View {
     @State private var connection = AeroPointConnection()
     @State private var pairedMac: PairedMac?
     private let store = PairedMacStore()
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
     public init() {
         _pairedMac = State(initialValue: PairedMacStore().load())
@@ -25,6 +26,7 @@ public struct AppRootView: View {
                 }
             }
         }
+        .preferredColorScheme(isDarkMode ? .dark : .light)
     }
 }
 #endif

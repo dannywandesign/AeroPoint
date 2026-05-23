@@ -7,12 +7,19 @@ public struct KeyboardControlView: View {
     @State private var text = ""
     @State private var activeModifiers: Set<KeyModifier> = []
     @FocusState private var textFieldFocused: Bool
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
     public init(connection: AeroPointConnection) {
         self.connection = connection
     }
 
+    @ViewBuilder
     public var body: some View {
+        let textBg = isDarkMode ? Color.white.opacity(0.04) : Color.black.opacity(0.04)
+        let textStroke = isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08)
+        let mainBg = isDarkMode ? Color.white.opacity(0.02) : Color.black.opacity(0.02)
+        let mainStroke = isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.05)
+
         VStack(spacing: 16) {
             // Modifier toggles (mechanical keys)
             HStack(spacing: 8) {
@@ -48,10 +55,10 @@ public struct KeyboardControlView: View {
                 TextField("Type text to send…", text: $text)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 12)
-                    .background(Color.white.opacity(0.04), in: Capsule())
+                    .background(textBg, in: Capsule())
                     .overlay(
                         Capsule()
-                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                            .stroke(textStroke, lineWidth: 1)
                     )
                     .autocorrectionDisabled()
                     .autocapitalization(.none)
@@ -81,10 +88,10 @@ public struct KeyboardControlView: View {
             .padding(.horizontal, 16)
         }
         .padding(.vertical, 12)
-        .background(Color.white.opacity(0.02), in: RoundedRectangle(cornerRadius: 24))
+        .background(mainBg, in: RoundedRectangle(cornerRadius: 24))
         .overlay(
             RoundedRectangle(cornerRadius: 24)
-                .stroke(Color.white.opacity(0.05), lineWidth: 1)
+                .stroke(mainStroke, lineWidth: 1)
         )
         .padding(.horizontal, 16)
     }
@@ -102,6 +109,7 @@ private struct ModifierButton: View {
     let label: String
     let isOn: Bool
     let action: () -> Void
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
     var body: some View {
         Button(action: action) {
@@ -110,24 +118,22 @@ private struct ModifierButton: View {
                 .foregroundStyle(isOn ? .white : .secondary)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(
-                    ZStack {
-                        if isOn {
-                            LinearGradient(
-                                colors: [Color(red: 99/255, green: 102/255, blue: 241/255), Color(red: 124/255, green: 58/255, blue: 237/255)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        } else {
-                            Color.white.opacity(0.04)
-                        }
-                    },
-                    in: Capsule()
-                )
+                .background {
+                    if isOn {
+                        LinearGradient(
+                            colors: [Color(red: 99/255, green: 102/255, blue: 241/255), Color(red: 124/255, green: 58/255, blue: 237/255)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    } else {
+                        isDarkMode ? Color.white.opacity(0.04) : Color.black.opacity(0.04)
+                    }
+                }
+                .clipShape(Capsule())
                 .overlay(
                     Capsule()
                         .stroke(
-                            isOn ? Color.white.opacity(0.2) : Color.white.opacity(0.06),
+                            isOn ? Color.white.opacity(0.2) : (isDarkMode ? Color.white.opacity(0.06) : Color.black.opacity(0.06)),
                             lineWidth: 1
                         )
                 )
@@ -141,6 +147,7 @@ private struct ModifierButton: View {
 private struct KeycapButton: View {
     let label: String
     let action: () -> Void
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
     var body: some View {
         Button(action: action) {
@@ -149,12 +156,12 @@ private struct KeycapButton: View {
                 .foregroundStyle(.primary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
+                .background(isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.05), in: RoundedRectangle(cornerRadius: 12))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(
                             LinearGradient(
-                                colors: [Color.white.opacity(0.08), Color.white.opacity(0.02)],
+                                colors: [isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08), isDarkMode ? Color.white.opacity(0.02) : Color.black.opacity(0.02)],
                                 startPoint: .top,
                                 endPoint: .bottom
                             ),

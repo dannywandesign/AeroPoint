@@ -4,6 +4,7 @@ import SwiftUI
 /// Full-screen touchpad: one-finger drag = mouse move, double-tap-and-drag = drag and drop.
 public struct TouchpadView: View {
     let connection: AeroPointConnection
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
     // Sensitivity multipliers
     private let moveSensitivity: Double = 1.8
@@ -25,11 +26,11 @@ public struct TouchpadView: View {
         ZStack {
             // Touchpad Surface Card
             RoundedRectangle(cornerRadius: 24)
-                .fill(Color.white.opacity(0.025))
+                .fill(isDarkMode ? Color.white.opacity(0.025) : Color.black.opacity(0.025))
                 .overlay(
                     // Subtle Grid Texture
                     TouchpadGridPattern()
-                        .stroke(Color.white.opacity(0.015), lineWidth: 1)
+                        .stroke(isDarkMode ? Color.white.opacity(0.015) : Color.black.opacity(0.015), lineWidth: 1)
                 )
                 .overlay(
                     // Inner Shadow/Glow effect
@@ -38,7 +39,7 @@ public struct TouchpadView: View {
                             LinearGradient(
                                 colors: isDragging ? 
                                     [Color(red: 99/255, green: 102/255, blue: 241/255), Color(red: 124/255, green: 58/255, blue: 237/255)] : 
-                                    [Color.white.opacity(0.08), Color.white.opacity(0.02)],
+                                    [isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08), isDarkMode ? Color.white.opacity(0.02) : Color.black.opacity(0.02)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
@@ -52,10 +53,10 @@ public struct TouchpadView: View {
                 Spacer()
                 HStack(spacing: 8) {
                     Image(systemName: isDragging ? "hand.draw.fill" : "hand.and.arrow.leading.and.trailing")
-                    Text(isDragging ? "DRAGGING ACTIVE" : "PRECISION TOUCHPAD")
+                    Text(isDragging ? "DRAGGING ACTIVE" : "TOUCHPAD")
                 }
                 .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(isDragging ? Color(red: 99/255, green: 102/255, blue: 241/255) : Color.white.opacity(0.2))
+                .foregroundStyle(isDragging ? Color(red: 99/255, green: 102/255, blue: 241/255) : (isDarkMode ? Color.white.opacity(0.15) : Color.black.opacity(0.15)))
                 .tracking(2)
                 .padding(.bottom, 20)
             }
@@ -147,51 +148,36 @@ struct TouchpadGridPattern: Shape {
     }
 }
 
-/// Horizontal scroll strip at the bottom of the controller.
+/// Horizontal scroll strip positioned below the touchpad.
 public struct ScrollStripView: View {
     let connection: AeroPointConnection
+    let isLandscape: Bool
     private let sensitivity: Double = 0.8
     @State private var lastLocation: CGPoint? = nil
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
-    public init(connection: AeroPointConnection) {
+    public init(connection: AeroPointConnection, isLandscape: Bool = false) {
         self.connection = connection
+        self.isLandscape = isLandscape
     }
 
     public var body: some View {
+        let scrollHeight: CGFloat = isLandscape ? 55 : 85
+        
         RoundedRectangle(cornerRadius: 16)
-            .fill(Color.white.opacity(0.03))
-            .frame(height: 52)
+            .fill(isDarkMode ? Color.white.opacity(0.03) : Color.black.opacity(0.03))
+            .frame(height: scrollHeight)
             .overlay(
-                // Inner groove tracking line
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.white.opacity(0.06))
-                    .frame(height: 6)
-                    .padding(.horizontal, 24)
-            )
-            .overlay(
-                HStack {
-                    Image(systemName: "chevron.left")
-                    Spacer()
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.up.and.down.circle.fill")
-                            .font(.system(size: 14))
-                        Text("SCROLL STRIP")
-                            .font(.system(size: 9, weight: .bold, design: .rounded))
-                            .tracking(2)
-                    }
-                    .foregroundStyle(Color.white.opacity(0.3))
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                }
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(Color.white.opacity(0.15))
-                .padding(.horizontal, 20)
+                Text("SCROLL")
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .tracking(2)
+                    .foregroundStyle(isDarkMode ? Color.white.opacity(0.3) : Color.black.opacity(0.3))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(
                         LinearGradient(
-                            colors: [Color.white.opacity(0.08), Color.white.opacity(0.02)],
+                            colors: [isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08), isDarkMode ? Color.white.opacity(0.02) : Color.black.opacity(0.02)],
                             startPoint: .top,
                             endPoint: .bottom
                         ),

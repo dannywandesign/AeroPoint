@@ -12,6 +12,7 @@ public struct PairingView: View {
     @State private var manualPort = "41074"
     @State private var manualNonce = ""
     @State private var status = ""
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
     public init(connection: AeroPointConnection, store: PairedMacStore, onPaired: @escaping (PairedMac) -> Void) {
         self.connection = connection
@@ -23,17 +24,17 @@ public struct PairingView: View {
         NavigationStack {
             ZStack {
                 // Background Mesh Gradients
-                Color(red: 0.04, green: 0.04, blue: 0.07)
+                (isDarkMode ? Color(red: 0.04, green: 0.04, blue: 0.07) : Color(red: 0.96, green: 0.96, blue: 0.98))
                     .ignoresSafeArea()
                 
                 Circle()
-                    .fill(Color(red: 99/255, green: 102/255, blue: 241/255).opacity(0.15))
+                    .fill(Color(red: 99/255, green: 102/255, blue: 241/255).opacity(isDarkMode ? 0.15 : 0.07))
                     .frame(width: 300, height: 300)
                     .blur(radius: 80)
                     .offset(x: -100, y: -200)
 
                 Circle()
-                    .fill(Color(red: 124/255, green: 58/255, blue: 237/255).opacity(0.15))
+                    .fill(Color(red: 124/255, green: 58/255, blue: 237/255).opacity(isDarkMode ? 0.15 : 0.07))
                     .frame(width: 300, height: 300)
                     .blur(radius: 80)
                     .offset(x: 100, y: 200)
@@ -56,6 +57,15 @@ public struct PairingView: View {
             .navigationTitle("Pair with PC")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: { isDarkMode.toggle() }) {
+                        Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(Color(red: 99/255, green: 102/255, blue: 241/255))
+                            .padding(8)
+                            .background(isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08), in: Circle())
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { showManual.toggle() }) {
                         Text(showManual ? "Scan QR" : "Manual")
@@ -63,15 +73,14 @@ public struct PairingView: View {
                             .foregroundStyle(Color(red: 99/255, green: 102/255, blue: 241/255))
                             .padding(.horizontal, 14)
                             .padding(.vertical, 6)
-                            .background(Color.white.opacity(0.08), in: Capsule())
+                            .background(isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08), in: Capsule())
                             .overlay(
                                 Capsule()
-                                    .stroke(Color.white.opacity(0.05), lineWidth: 1)
+                                    .stroke(isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.05), lineWidth: 1)
                             )
                     }
                 }
             }
-            .preferredColorScheme(.dark)
         }
     }
 
@@ -155,7 +164,7 @@ public struct PairingView: View {
                             .foregroundStyle(.secondary)
                             .fontWeight(.semibold)
                         TextField("e.g. 192.168.1.10", text: $manualHost)
-                            .textFieldStyle(GlassInputStyle())
+                            .textFieldStyle(GlassInputStyle(isDarkMode: isDarkMode))
                             .keyboardType(.decimalPad)
                     }
 
@@ -165,7 +174,7 @@ public struct PairingView: View {
                             .foregroundStyle(.secondary)
                             .fontWeight(.semibold)
                         TextField("41074", text: $manualPort)
-                            .textFieldStyle(GlassInputStyle())
+                            .textFieldStyle(GlassInputStyle(isDarkMode: isDarkMode))
                             .keyboardType(.numberPad)
                     }
 
@@ -175,7 +184,7 @@ public struct PairingView: View {
                             .foregroundStyle(.secondary)
                             .fontWeight(.semibold)
                         TextField("Enter the pairing nonce", text: $manualNonce)
-                            .textFieldStyle(GlassInputStyle())
+                            .textFieldStyle(GlassInputStyle(isDarkMode: isDarkMode))
                             .autocorrectionDisabled()
                             .autocapitalization(.none)
                             .font(.system(.body, design: .monospaced))
@@ -211,12 +220,12 @@ public struct PairingView: View {
                     .disabled(manualHost.isEmpty || manualNonce.isEmpty)
                 }
                 .padding(24)
-                .background(Color.white.opacity(0.04))
+                .background(isDarkMode ? Color.white.opacity(0.04) : Color.black.opacity(0.04))
                 .background(.ultraThinMaterial)
                 .cornerRadius(24)
                 .overlay(
                     RoundedRectangle(cornerRadius: 24)
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        .stroke(isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08), lineWidth: 1)
                 )
                 .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
             }
@@ -309,15 +318,16 @@ public struct PairingView: View {
 // MARK: - Helper Views & Styles
 
 struct GlassInputStyle: TextFieldStyle {
+    let isDarkMode: Bool
     func _body(configuration: TextField<Self._Label>) -> some View {
         configuration
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color.white.opacity(0.04))
+            .background(isDarkMode ? Color.white.opacity(0.04) : Color.black.opacity(0.04))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                    .stroke(isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08), lineWidth: 1)
             )
             .foregroundStyle(.primary)
     }

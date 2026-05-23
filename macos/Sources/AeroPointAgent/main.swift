@@ -7,4 +7,7 @@ app.setActivationPolicy(.accessory)
 
 let delegate = AeroPointAgentAppDelegate()
 app.delegate = delegate
-app.run()
+
+withExtendedLifetime(delegate) {
+    app.run()
+}

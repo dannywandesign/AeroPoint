@@ -9,6 +9,7 @@ public struct ControllerView: View {
 
     @State private var showKeyboard = false
     @State private var statusPulse = false
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
     public init(connection: AeroPointConnection, mac: PairedMac, onUnpair: @escaping () -> Void) {
         self.connection = connection
@@ -19,53 +20,60 @@ public struct ControllerView: View {
     public var body: some View {
         ZStack {
             // Background Mesh Gradients
-            Color(red: 0.04, green: 0.04, blue: 0.07)
+            (isDarkMode ? Color(red: 0.04, green: 0.04, blue: 0.07) : Color(red: 0.96, green: 0.96, blue: 0.98))
                 .ignoresSafeArea()
 
             Circle()
-                .fill(Color(red: 99/255, green: 102/255, blue: 241/255).opacity(0.12))
+                .fill(Color(red: 99/255, green: 102/255, blue: 241/255).opacity(isDarkMode ? 0.12 : 0.06))
                 .frame(width: 300, height: 300)
                 .blur(radius: 85)
                 .offset(x: 120, y: -150)
 
             Circle()
-                .fill(Color(red: 124/255, green: 58/255, blue: 237/255).opacity(0.12))
+                .fill(Color(red: 124/255, green: 58/255, blue: 237/255).opacity(isDarkMode ? 0.12 : 0.06))
                 .frame(width: 300, height: 300)
                 .blur(radius: 85)
                 .offset(x: -120, y: 150)
 
-            VStack(spacing: 16) {
-                // Status bar
-                statusBar
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-
-                // Touchpad (takes remaining space)
-                TouchpadView(connection: connection)
+            GeometryReader { geometry in
+                let isLandscape = geometry.size.width > geometry.size.height
+                
+                VStack(spacing: 12) {
+                    // Status bar
+                    statusBar
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
+                    
+                    // Main controls container grouped closely with small spacing
+                    VStack(spacing: 12) {
+                        // Touchpad (dynamic: expands to fill all remaining vertical/horizontal space)
+                        TouchpadView(connection: connection)
+                        
+                        // Click buttons
+                        HStack(spacing: 12) {
+                            MouseButtonView(label: "Left Click", button: .left, connection: connection)
+                            MouseButtonView(label: "Right Click", button: .right, connection: connection)
+                        }
+                        
+                        // Scroll strip
+                        ScrollStripView(connection: connection, isLandscape: isLandscape)
+                    }
                     .padding(.horizontal, 16)
+                    
+                    // Keyboard panel (toggleable)
+                    if showKeyboard {
+                        KeyboardControlView(connection: connection)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 16)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
 
-                // Click buttons
-                HStack(spacing: 16) {
-                    MouseButtonView(label: "Left Click", button: .left, connection: connection)
-                    MouseButtonView(label: "Right Click", button: .right, connection: connection)
+                    // Bottom toolbar
+                    bottomBar
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 12)
                 }
-                .padding(.horizontal, 16)
-
-                // Scroll strip
-                ScrollStripView(connection: connection)
-                    .padding(.horizontal, 16)
-
-                // Keyboard panel (toggleable)
-                if showKeyboard {
-                    KeyboardControlView(connection: connection)
-                        .padding(.top, 4)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
-
-                // Bottom toolbar
-                bottomBar
-                    .padding(.horizontal)
-                    .padding(.bottom, 12)
+                .frame(width: geometry.size.width, height: geometry.size.height)
             }
         }
         .navigationBarBackButtonHidden(true)
@@ -75,7 +83,6 @@ public struct ControllerView: View {
         .onDisappear {
             connection.disconnect()
         }
-        .preferredColorScheme(.dark)
     }
 
     // MARK: - Sub-views
@@ -122,10 +129,10 @@ public struct ControllerView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 18))
+        .background(isDarkMode ? Color.white.opacity(0.04) : Color.black.opacity(0.04), in: RoundedRectangle(cornerRadius: 18))
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                .stroke(isDarkMode ? Color.white.opacity(0.06) : Color.black.opacity(0.06), lineWidth: 1)
         )
     }
 
@@ -144,13 +151,24 @@ public struct ControllerView: View {
                 .foregroundStyle(.primary)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(Color.white.opacity(0.05), in: Capsule())
+                .background(isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.05), in: Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        .stroke(isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08), lineWidth: 1)
                 )
             }
             Spacer()
+            Button(action: { isDarkMode.toggle() }) {
+                Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.primary)
+                    .frame(width: 40, height: 40)
+                    .background(isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.05), in: Circle())
+                    .overlay(
+                        Circle()
+                            .stroke(isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08), lineWidth: 1)
+                    )
+            }
         }
     }
 
@@ -185,6 +203,7 @@ private struct MouseButtonView: View {
     let connection: AeroPointConnection
 
     @State private var isPressed = false
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
     var body: some View {
         Text(label)
@@ -192,26 +211,24 @@ private struct MouseButtonView: View {
             .foregroundStyle(isPressed ? .white : .primary)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-            .background(
-                ZStack {
-                    if isPressed {
-                        LinearGradient(
-                            colors: [Color(red: 99/255, green: 102/255, blue: 241/255), Color(red: 124/255, green: 58/255, blue: 237/255)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    } else {
-                        Color.white.opacity(0.04)
-                    }
-                },
-                in: RoundedRectangle(cornerRadius: 16)
-            )
+            .background {
+                if isPressed {
+                    LinearGradient(
+                        colors: [Color(red: 99/255, green: 102/255, blue: 241/255), Color(red: 124/255, green: 58/255, blue: 237/255)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                } else {
+                    isDarkMode ? Color.white.opacity(0.04) : Color.black.opacity(0.04)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(
                         isPressed ? 
-                        LinearGradient(colors: [.white.opacity(0.3), .clear], startPoint: .top, endPoint: .bottom) :
-                        LinearGradient(colors: [.white.opacity(0.08), .white.opacity(0.02)], startPoint: .top, endPoint: .bottom),
+                        LinearGradient(colors: [isDarkMode ? .white.opacity(0.3) : .black.opacity(0.3), .clear], startPoint: .top, endPoint: .bottom) :
+                        LinearGradient(colors: [isDarkMode ? .white.opacity(0.08) : .black.opacity(0.08), isDarkMode ? .white.opacity(0.02) : .black.opacity(0.02)], startPoint: .top, endPoint: .bottom),
                         lineWidth: 1
                     )
             )
