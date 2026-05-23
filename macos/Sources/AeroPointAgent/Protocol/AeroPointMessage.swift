@@ -4,6 +4,8 @@ public enum AeroPointMessage: Equatable, Sendable {
     case mouseMove(seq: Int, dx: Double, dy: Double)
     case mouseClick(seq: Int, button: MouseButton)
     case mouseScroll(seq: Int, dx: Double, dy: Double)
+    case mouseDown(seq: Int, button: MouseButton)
+    case mouseUp(seq: Int, button: MouseButton)
     case keyboardText(seq: Int, text: String)
     case keyboardKey(seq: Int, key: KeyboardKey, modifiers: [KeyboardModifier])
 
@@ -12,6 +14,8 @@ public enum AeroPointMessage: Equatable, Sendable {
         case let .mouseMove(seq, _, _),
              let .mouseClick(seq, _),
              let .mouseScroll(seq, _, _),
+             let .mouseDown(seq, _),
+             let .mouseUp(seq, _),
              let .keyboardText(seq, _),
              let .keyboardKey(seq, _, _):
             seq

@@ -46,6 +46,26 @@ namespace AeroPointAgent.Protocol
         }
     }
 
+    public sealed class MouseDownMessage : AeroPointMessage
+    {
+        public MouseButton Button { get; }
+
+        public MouseDownMessage(int sequence, MouseButton button) : base(sequence)
+        {
+            Button = button;
+        }
+    }
+
+    public sealed class MouseUpMessage : AeroPointMessage
+    {
+        public MouseButton Button { get; }
+
+        public MouseUpMessage(int sequence, MouseButton button) : base(sequence)
+        {
+            Button = button;
+        }
+    }
+
     public sealed class MouseScrollMessage : AeroPointMessage
     {
         public double Dx { get; }

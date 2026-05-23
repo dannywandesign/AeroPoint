@@ -1,8 +1,7 @@
 #if canImport(UIKit)
 import SwiftUI
 
-/// Full-screen touchpad: one-finger drag = mouse move, single tap = left click,
-/// two-finger tap = right click, two-finger drag = scroll.
+/// Full-screen touchpad: one-finger drag = mouse move, double-tap-and-drag = drag and drop.
 public struct TouchpadView: View {
     let connection: AeroPointConnection
 
@@ -13,6 +12,10 @@ public struct TouchpadView: View {
     @State private var lastDragLocation: CGPoint? = nil
     @State private var rippleLocation: CGPoint = .zero
     @State private var showRipple = false
+
+    // Tap tracking for double-tap-to-drag
+    @State private var lastTapTime = Date.distantPast
+    @State private var isDragging = false
 
     public init(connection: AeroPointConnection) {
         self.connection = connection
@@ -38,11 +41,22 @@ public struct TouchpadView: View {
                     .animation(.easeOut(duration: 0.3), value: showRipple)
             }
         }
-        // One-finger drag → mouse move
+        // One-finger drag → mouse move (or drag-and-drop if double-tapped)
         .gesture(
-            DragGesture(minimumDistance: 1)
+            DragGesture(minimumDistance: 0)
                 .onChanged { value in
-                    guard value.velocity.width.isFinite else { return }
+                    let now = Date()
+                    if lastDragLocation == nil {
+                        // Gesture start: detect double-tap
+                        if now.timeIntervalSince(lastTapTime) < 0.3 {
+                            isDragging = true
+                            connection.send(.mouseDown(button: .left))
+                            flashRipple(at: value.startLocation)
+                        } else {
+                            isDragging = false
+                        }
+                    }
+
                     if let last = lastDragLocation {
                         let dx = (value.location.x - last.x) * moveSensitivity
                         let dy = (value.location.y - last.y) * moveSensitivity
@@ -50,18 +64,14 @@ public struct TouchpadView: View {
                     }
                     lastDragLocation = value.location
                 }
-                .onEnded { _ in lastDragLocation = nil }
-        )
-        // Single tap → left click
-        .onTapGesture { location in
-            flashRipple(at: location)
-            connection.send(.mouseClick(button: .left))
-        }
-        // Two-finger tap / long press → right click
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0.4)
                 .onEnded { _ in
-                    connection.send(.mouseClick(button: .right))
+                    if isDragging {
+                        connection.send(.mouseUp(button: .left))
+                        isDragging = false
+                    } else {
+                        lastTapTime = Date()
+                    }
+                    lastDragLocation = nil
                 }
         )
     }

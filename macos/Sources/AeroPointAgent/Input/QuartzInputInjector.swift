@@ -4,6 +4,8 @@ import Foundation
 
 public final class QuartzInputInjector: InputInjector {
     private let maxDelta: Double
+    private var isLeftButtonDown = false
+    private var isRightButtonDown = false
 
     public init(maxDelta: Double = 200) {
         self.maxDelta = maxDelta
@@ -18,7 +20,17 @@ public final class QuartzInputInjector: InputInjector {
             y: current.y + clamp(dy)
         )
         print("[Injector] moveMouse dx=\(dx) dy=\(dy) trusted=\(trusted) from=\(current) to=\(destination)")
-        let event = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved,
+        
+        let mouseType: CGEventType
+        if isLeftButtonDown {
+            mouseType = .leftMouseDragged
+        } else if isRightButtonDown {
+            mouseType = .rightMouseDragged
+        } else {
+            mouseType = .mouseMoved
+        }
+
+        let event = CGEvent(mouseEventSource: nil, mouseType: mouseType,
                             mouseCursorPosition: destination, mouseButton: .left)
         if event == nil { print("[Injector] ⚠️ CGEvent creation FAILED for mouseMoved") }
         event?.post(tap: .cghidEventTap)
@@ -40,6 +52,32 @@ public final class QuartzInputInjector: InputInjector {
         down?.post(tap: .cghidEventTap)
         up?.post(tap: .cghidEventTap)
         print("[Injector] clickMouse posted")
+    }
+
+    public func setMouseButton(button: MouseButton, down: Bool) throws {
+        let trusted = AXIsProcessTrusted()
+        let position = CGEvent(source: nil)?.location ?? .zero
+        let cgButton: CGMouseButton = button == .left ? .left : .right
+        
+        if button == .left {
+            isLeftButtonDown = down
+        } else {
+            isRightButtonDown = down
+        }
+        
+        let mouseType: CGEventType
+        if button == .left {
+            mouseType = down ? .leftMouseDown : .leftMouseUp
+        } else {
+            mouseType = down ? .rightMouseDown : .rightMouseUp
+        }
+        
+        print("[Injector] setMouseButton \(button.rawValue) down=\(down) trusted=\(trusted) at=\(position)")
+        let event = CGEvent(mouseEventSource: nil, mouseType: mouseType,
+                            mouseCursorPosition: position, mouseButton: cgButton)
+        if event == nil { print("[Injector] ⚠️ CGEvent creation FAILED for setMouseButton") }
+        event?.post(tap: .cghidEventTap)
+        print("[Injector] setMouseButton posted")
     }
 
     public func scrollMouse(dx: Double, dy: Double) throws {

@@ -26,6 +26,14 @@ public struct CommandEncoder {
             sequenceNumber += 1
             dict = ["seq": sequenceNumber, "type": "mouse.click", "button": button.rawValue]
 
+        case let .mouseDown(button):
+            sequenceNumber += 1
+            dict = ["seq": sequenceNumber, "type": "mouse.down", "button": button.rawValue]
+
+        case let .mouseUp(button):
+            sequenceNumber += 1
+            dict = ["seq": sequenceNumber, "type": "mouse.up", "button": button.rawValue]
+
         case let .mouseScroll(dx, dy):
             sequenceNumber += 1
             dict = ["seq": sequenceNumber, "type": "mouse.scroll", "dx": dx, "dy": dy]

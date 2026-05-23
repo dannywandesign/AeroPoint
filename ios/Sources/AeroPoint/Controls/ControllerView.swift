@@ -30,8 +30,8 @@ public struct ControllerView: View {
 
             // Click buttons
             HStack(spacing: 16) {
-                clickButton("Left Click", button: .left)
-                clickButton("Right Click", button: .right)
+                MouseButtonView(label: "Left Click", button: .left, connection: connection)
+                MouseButtonView(label: "Right Click", button: .right, connection: connection)
             }
             .padding(.horizontal)
 
@@ -87,15 +87,38 @@ public struct ControllerView: View {
         }
     }
 
-    private func clickButton(_ label: String, button: MouseButton) -> some View {
-        Button(label) {
-            connection.send(.mouseClick(button: button))
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .background(Color(.systemGray5), in: RoundedRectangle(cornerRadius: 10))
-        .font(.callout.weight(.medium))
+// A press-and-hold button for mouse down/up dragging actions
+private struct MouseButtonView: View {
+    let label: String
+    let button: MouseButton
+    let connection: AeroPointConnection
+
+    @State private var isPressed = false
+
+    var body: some View {
+        Text(label)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(isPressed ? Color(.systemGray3) : Color(.systemGray5), in: RoundedRectangle(cornerRadius: 10))
+            .font(.callout.weight(.medium))
+            .contentShape(RoundedRectangle(cornerRadius: 10))
+            .scaleEffect(isPressed ? 0.98 : 1.0)
+            .animation(.easeOut(duration: 0.1), value: isPressed)
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in
+                        if !isPressed {
+                            isPressed = true
+                            connection.send(.mouseDown(button: button))
+                        }
+                    }
+                    .onEnded { _ in
+                        isPressed = false
+                        connection.send(.mouseUp(button: button))
+                    }
+            )
     }
+}
 
     // MARK: Status helpers
 

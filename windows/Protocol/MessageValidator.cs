@@ -58,6 +58,22 @@ namespace AeroPointAgent.Protocol
                     }
                     return new MouseClickMessage(seq, button);
 
+                case "mouse.down":
+                    if (raw.Button == null) throw new MessageValidationError("missing_field", "Missing 'button' field");
+                    if (!Enum.TryParse<MouseButton>(raw.Button, true, out var downButton))
+                    {
+                        throw new MessageValidationError("unsupported_button", $"Unsupported button: {raw.Button}");
+                    }
+                    return new MouseDownMessage(seq, downButton);
+
+                case "mouse.up":
+                    if (raw.Button == null) throw new MessageValidationError("missing_field", "Missing 'button' field");
+                    if (!Enum.TryParse<MouseButton>(raw.Button, true, out var upButton))
+                    {
+                        throw new MessageValidationError("unsupported_button", $"Unsupported button: {raw.Button}");
+                    }
+                    return new MouseUpMessage(seq, upButton);
+
                 case "mouse.scroll":
                     if (!raw.Dx.HasValue) throw new MessageValidationError("missing_field", "Missing 'dx' field");
                     if (!raw.Dy.HasValue) throw new MessageValidationError("missing_field", "Missing 'dy' field");

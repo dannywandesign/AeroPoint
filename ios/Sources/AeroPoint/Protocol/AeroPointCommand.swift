@@ -5,6 +5,8 @@ import Foundation
 public enum AeroPointCommand {
     case mouseMove(dx: Double, dy: Double)
     case mouseClick(button: MouseButton)
+    case mouseDown(button: MouseButton)
+    case mouseUp(button: MouseButton)
     case mouseScroll(dx: Double, dy: Double)
     case keyboardText(String)
     case keyboardKey(key: SpecialKey, modifiers: [KeyModifier])

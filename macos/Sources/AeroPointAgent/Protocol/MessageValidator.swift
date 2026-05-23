@@ -36,6 +36,20 @@ public final class MessageValidator {
             }
             return .mouseClick(seq: seq, button: button)
 
+        case "mouse.down":
+            guard let buttonValue = raw.button else { throw MessageValidationError.missingField("button") }
+            guard let button = MouseButton(rawValue: buttonValue) else {
+                throw MessageValidationError.unsupportedButton(buttonValue)
+            }
+            return .mouseDown(seq: seq, button: button)
+
+        case "mouse.up":
+            guard let buttonValue = raw.button else { throw MessageValidationError.missingField("button") }
+            guard let button = MouseButton(rawValue: buttonValue) else {
+                throw MessageValidationError.unsupportedButton(buttonValue)
+            }
+            return .mouseUp(seq: seq, button: button)
+
         case "mouse.scroll":
             guard let dx = raw.dx else { throw MessageValidationError.missingField("dx") }
             guard let dy = raw.dy else { throw MessageValidationError.missingField("dy") }

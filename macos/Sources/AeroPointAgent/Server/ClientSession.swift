@@ -76,6 +76,10 @@ public final class ClientSession {
             try inputInjector.moveMouse(dx: dx, dy: dy)
         case let .mouseClick(_, button):
             try inputInjector.clickMouse(button: button)
+        case let .mouseDown(_, button):
+            try inputInjector.setMouseButton(button: button, down: true)
+        case let .mouseUp(_, button):
+            try inputInjector.setMouseButton(button: button, down: false)
         case let .mouseScroll(_, dx, dy):
             try inputInjector.scrollMouse(dx: dx, dy: dy)
         case let .keyboardText(_, text):

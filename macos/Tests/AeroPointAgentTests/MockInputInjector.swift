@@ -4,6 +4,7 @@ final class MockInputInjector: InputInjector {
     enum Event: Equatable {
         case mouseMove(dx: Double, dy: Double)
         case mouseClick(button: MouseButton)
+        case mouseButton(button: MouseButton, down: Bool)
         case mouseScroll(dx: Double, dy: Double)
         case keyboardText(String)
         case keyboardKey(key: KeyboardKey, modifiers: [KeyboardModifier])
@@ -17,6 +18,10 @@ final class MockInputInjector: InputInjector {
 
     func clickMouse(button: MouseButton) throws {
         events.append(.mouseClick(button: button))
+    }
+
+    func setMouseButton(button: MouseButton, down: Bool) throws {
+        events.append(.mouseButton(button: button, down: down))
     }
 
     func scrollMouse(dx: Double, dy: Double) throws {

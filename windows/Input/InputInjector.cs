@@ -34,6 +34,7 @@ namespace AeroPointAgent.Input
     {
         void MoveMouse(double dx, double dy);
         void ClickMouse(MouseButton button);
+        void SetMouseButton(MouseButton button, bool down);
         void ScrollMouse(double dx, double dy);
         void TypeText(string text);
         void PressKey(KeyboardKey key, List<KeyboardModifier> modifiers);

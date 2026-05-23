@@ -87,6 +87,41 @@ namespace AeroPointAgent.Input
             SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(INPUT)));
         }
 
+        public void SetMouseButton(MouseButton button, bool down)
+        {
+            Console.WriteLine($"[Injector] SetMouseButton {button} down={down}");
+
+            uint flag;
+            if (button == MouseButton.Left)
+            {
+                flag = down ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
+            }
+            else
+            {
+                flag = down ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
+            }
+
+            var inputs = new INPUT[1];
+            inputs[0] = new INPUT
+            {
+                type = INPUT_MOUSE,
+                U = new InputUnion
+                {
+                    mi = new MOUSEINPUT
+                    {
+                        dx = 0,
+                        dy = 0,
+                        mouseData = 0,
+                        dwFlags = flag,
+                        time = 0,
+                        dwExtraInfo = IntPtr.Zero
+                    }
+                }
+            };
+
+            SendInput((uint)inputs.Length, inputs, Marshal.SizeOf(typeof(INPUT)));
+        }
+
         public void ScrollMouse(double dx, double dy)
         {
             Console.WriteLine($"[Injector] ScrollMouse dx={dx:F1} dy={dy:F1}");

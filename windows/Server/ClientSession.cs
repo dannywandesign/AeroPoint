@@ -150,6 +150,12 @@ namespace AeroPointAgent.Server
                 case MouseClickMessage click:
                     _inputInjector.ClickMouse(click.Button);
                     break;
+                case MouseDownMessage down:
+                    _inputInjector.SetMouseButton(down.Button, true);
+                    break;
+                case MouseUpMessage up:
+                    _inputInjector.SetMouseButton(up.Button, false);
+                    break;
                 case MouseScrollMessage scroll:
                     _inputInjector.ScrollMouse(scroll.Dx, scroll.Dy);
                     break;

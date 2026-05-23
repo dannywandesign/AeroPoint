@@ -15,6 +15,22 @@ struct MessageValidatorTests {
         #expect(message == .mouseMove(seq: 101, dx: 12, dy: -4))
     }
 
+    @Test("accepts mouse down/up commands")
+    func acceptsMouseDownUp() throws {
+        let validator = MessageValidator()
+        let downData = Data("""
+        {"seq":102,"type":"mouse.down","button":"left"}
+        """.utf8)
+        let downMessage = try validator.validate(downData)
+        #expect(downMessage == .mouseDown(seq: 102, button: .left))
+
+        let upData = Data("""
+        {"seq":103,"type":"mouse.up","button":"left"}
+        """.utf8)
+        let upMessage = try validator.validate(upData)
+        #expect(upMessage == .mouseUp(seq: 103, button: .left))
+    }
+
     @Test("accepts keyboard shortcut commands")
     func acceptsKeyboardShortcut() throws {
         let data = Data("""
