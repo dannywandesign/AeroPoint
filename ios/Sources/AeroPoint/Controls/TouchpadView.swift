@@ -129,6 +129,7 @@ struct MultiTouchTouchpadRepresentable: UIViewRepresentable {
         return coordinator
     }
 
+    @MainActor
     class Coordinator: NSObject {
         let connection: AeroPointConnection
         let moveSensitivity: Double
