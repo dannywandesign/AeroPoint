@@ -107,7 +107,7 @@ public struct PairingView: View {
 
             // Glowing Focus Target Frame
             ScannerTargetFrameView()
-                .frame(width: 260, height: 260)
+                .frame(width: 266, height: 266)
 
             VStack {
                 Spacer()
@@ -372,7 +372,7 @@ struct ScannerTargetFrameView: View {
 }
 
 struct ScannerCornerShape: Shape {
-    let radius: CGFloat = 24
+    let radius: CGFloat = 27
     
     func path(in rect: CGRect) -> Path {
         var path = Path()
