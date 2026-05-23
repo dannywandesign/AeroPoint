@@ -93,17 +93,7 @@ public struct PairingView: View {
             }
             .ignoresSafeArea()
 
-            // Dark semi-transparent mask around the focus square
-            Color.black.opacity(0.4)
-                .mask(
-                    Color.black
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 24)
-                                .frame(width: 260, height: 260)
-                                .blendMode(.destinationOut)
-                        )
-                )
-                .ignoresSafeArea()
+
 
             // Glowing Focus Target Frame
             ScannerTargetFrameView()
