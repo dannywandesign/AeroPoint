@@ -13,4 +13,5 @@ DerivedData/
 *.log
 
 # Release packaging output
+build/
 dist/
