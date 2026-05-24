@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VERSION="${AEROPOINT_VERSION:-1.0.0}"
+VERSION="${AEROPOINT_VERSION:-0.1}"
 RID="${AEROPOINT_WINDOWS_RID:-win-x64}"
 PUBLISH_DIR="$ROOT_DIR/dist/windows/$RID"
 ZIP_PATH="$ROOT_DIR/dist/AeroPointAgent-windows-$RID-$VERSION.zip"

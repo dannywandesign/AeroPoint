@@ -20,7 +20,7 @@ The app only connects to the AeroPoint companion agent on the same local Wi-Fi o
 
 Replace these placeholders before submitting. GitHub Releases can host these files:
 
-- macOS agent: `https://github.com/dannywandesign/AeroPoint/releases/download/v1.0.0/AeroPointAgent-macos-1.0.0.zip`
+- macOS agent: `https://github.com/dannywandesign/AeroPoint/releases/download/v0.1/AeroPointAgent-macos-0.1.zip`
 - Support page: `https://dannywandesign.github.io/AeroPoint/support/`
 - Privacy policy: `https://dannywandesign.github.io/AeroPoint/privacy/`
 

@@ -1,279 +1,122 @@
 # AeroPoint
 
-AeroPoint is a **Mac-first, same-Wi-Fi remote control app**. A native iPhone app sends mouse and keyboard commands to a native macOS menu bar agent over an authenticated local WebSocket connection — no cloud, no internet required.
+AeroPoint turns an iPhone or iPad into a local-network mouse and keyboard for a user-owned Mac. It uses a native iOS controller app and a native macOS menu bar agent over an authenticated local WebSocket connection. There are no accounts, cloud servers, analytics, ads, or internet relay.
 
----
+## How It Works
+
+1. Run the AeroPoint Mac agent.
+2. Grant macOS Accessibility permission so the agent can move the pointer and type.
+3. Open AeroPoint on iPhone or iPad.
+4. Scan the QR code shown by the Mac menu bar agent.
+5. Use the iPhone or iPad touchpad, click buttons, scroll strip, and keyboard panel to control the Mac.
+
+Both devices must be on the same Wi-Fi or local network.
 
 ## Quick Start
 
-### 1. Run the Agent (macOS)
+### Run the Mac Agent
 
 ```bash
 cd macos
 swift run
 ```
-The agent appears as **✈ AeroPoint** in your Mac's menu bar. A QR code is shown in the popover.
-> **First run:** Click **Grant Access** in the popover and enable AeroPoint in  
-> **System Settings → Privacy & Security → Accessibility**
 
-### 2. Run the iOS App
+The agent appears as AeroPoint in the Mac menu bar. Open its popover to view the pairing QR code.
 
-Open `ios/Package.swift` in Xcode, select your iPhone as the run target, and hit **Run ▶**.
+On first run, click **Grant Access** in the popover and enable AeroPoint in:
 
-### 3. Pair
+```text
+System Settings -> Privacy & Security -> Accessibility
+```
 
-- On the iPhone, point the camera at the QR code in the Mac's menu bar popover
-- The iPhone switches to the controller view once connected
-- The popover shows **"iPhone connected ✓"**
+### Run the iOS App
 
-> **Manual pairing:** Tap **Manual** (top-right) and enter your Mac's IP, port `41074`, and the nonce printed in the Terminal.
+Open the iOS Xcode project:
 
-Both devices must be on the **same Wi-Fi network**.
+```bash
+open ios/AeroPoint/AeroPoint.xcodeproj
+```
+
+Select the `AeroPoint` scheme, choose your iPhone or iPad, and run the app.
+
+### Pair
+
+- Scan the QR code shown by the Mac agent.
+- Or tap **Manual** and enter the Mac IP address, port `41074`, and pairing nonce shown by the agent.
+- After pairing, the controller screen opens automatically.
+
+## Major Features
+
+### iOS Controller
+
+- Touchpad for relative pointer movement.
+- Tap and press controls for left and right mouse actions.
+- Scroll strip for vertical scrolling.
+- Keyboard panel for text entry and special keys.
+- Connection status indicator.
+- Disconnect/unpair flow.
+- Automatic reconnect with exponential backoff.
+
+### macOS Agent
+
+- Menu bar app with no Dock icon.
+- QR-code pairing flow.
+- Authenticated local WebSocket server on port `41074`.
+- One active client at a time.
+- Keychain-backed pairing token storage.
+- Accessibility permission status and prompt.
+- Quartz/CoreGraphics mouse, scroll, and keyboard injection.
+
+### Privacy
+
+- Local network only.
+- No cloud backend.
+- No accounts.
+- No analytics or tracking SDKs.
+- Pairing credentials stay on device and in the Mac Keychain.
 
 ## App Store Submission
 
-The iOS app requires the AeroPoint companion agent on a user-owned Mac on the same local network. Before submitting to App Review, publish a signed and notarized Mac agent download, a support page, and the privacy policy.
+The iOS app requires the AeroPoint Mac agent on the same local network. Before submitting to App Review, publish:
 
-Use `docs/APP_STORE_SUBMISSION.md` for App Review notes, privacy label guidance, and the metadata checklist. Use `docs/desktop-agent-packaging.md` for desktop agent packaging commands.
+- Signed and notarized Mac agent download.
+- Public privacy policy URL.
+- Public support URL.
 
----
+Use [docs/APP_STORE_SUBMISSION.md](docs/APP_STORE_SUBMISSION.md) for App Review notes and metadata guidance. Use [docs/desktop-agent-packaging.md](docs/desktop-agent-packaging.md) for Mac agent packaging.
 
 ## Project Structure
 
 | Directory | Description |
 |-----------|-------------|
-| `macos/` | Swift macOS menu bar agent (SPM executable, macOS 14+) |
-| `windows/`| Experimental C# Windows system tray agent, not advertised in the current App Store submission |
-| `ios/` | SwiftUI iPhone app (SPM library + Xcode project, iOS 17+) |
-| `docs/` | Design specs and planning documents |
+| `ios/` | SwiftUI iOS app and Xcode project |
+| `macos/` | Swift macOS menu bar agent |
+| `docs/` | App Store, packaging, privacy, support, and planning docs |
 
----
+## Tests
 
-## Features
+Run iOS package tests:
 
-### macOS Agent
+```bash
+swift test --package-path ios
+```
 
-#### ✅ Menu Bar Agent
-- Launches as a macOS menu bar app (no Dock icon, no App Switcher entry)
-- Status popover shows live: server state, local IP:port, Accessibility permission, connected client
-- **Grant Access** button triggers the macOS Accessibility permission prompt — status updates live without restart
-- **Quit** button terminates the agent cleanly
-
-#### ✅ WebSocket Server
-- Binds on port **41074** using `Network.framework` (no external dependencies)
-- Accepts one authenticated client at a time; drops previous client on new connection
-- Authentication: client sends `hello` frame with `clientId` + `token` before any commands are accepted
-- Responds with `hello_ok`, `ack`, or `error` JSON frames
-- Re-shows QR code automatically when a client disconnects
-
-#### ✅ Pairing & Token Storage
-- Generates a `aeropoint://pair?host=…&port=…&nonce=…&name=…&v=1` URL
-- Renders it as a **scannable QR code** in the status popover (CoreImage, no dependencies)
-- Tokens persisted in the macOS **Keychain** — iPhone reconnects after Mac restarts without re-pairing
-- QR code disappears once a client successfully authenticates
-
-#### ✅ Mouse Injection (Quartz / CoreGraphics)
-- Relative mouse movement (clamped to ±200 px per event)
-- Left and right click (down + up events at current cursor position)
-- Two-axis scroll wheel
-
-#### ✅ Keyboard Injection (Quartz / CoreGraphics)
-- Unicode text input via `CGEventKeyboardSetUnicodeString` (key down + up)
-- Special keys with full modifier support (`Command+Space`, `Command+Tab`, etc.)
-
-Supported special keys: `Enter`, `Escape`, `Tab`, `Delete`, `ArrowUp`, `ArrowDown`, `ArrowLeft`, `ArrowRight`, `Space`
-
-Supported modifiers: `Command`, `Option`, `Control`, `Shift`
-
----
-
-### iOS App
-
-#### ✅ Pairing Screen
-- QR code scanner — point camera at Mac popover to pair automatically
-- Manual entry fallback: IP address, port, and nonce
-
-#### ✅ Controller View
-- **Touchpad** — one-finger drag moves the cursor; single tap = left click; long press = right click
-- **Scroll strip** — vertical drag scrolls the page
-- **Left Click / Right Click** buttons
-- **Keyboard panel** — toggleable on-screen keyboard for text input and special keys
-- Live connection status indicator (green / yellow / red)
-- **Unpair** button to disconnect and return to pairing screen
-
-#### ✅ Connection Management
-- Automatic reconnect with exponential back-off (up to 10 s between attempts)
-- Commands silently dropped unless connection is in `.connected` state
-
----
-
-## Protocol — Message Types
-
-All input commands are JSON-encoded and validated before execution:
-
-| Type | Fields | Description |
-|------|--------|-------------|
-| `mouse.move` | `seq`, `dx`, `dy` | Relative pointer movement |
-| `mouse.click` | `seq`, `button` | Left or right click |
-| `mouse.scroll` | `seq`, `dx`, `dy` | Two-axis scroll |
-| `keyboard.text` | `seq`, `text` | Unicode text input |
-| `keyboard.key` | `seq`, `key`, `modifiers` | Special keys + modifier combos |
-
-Validation rejects: unknown types, missing fields, invalid buttons/keys/modifiers, duplicate sequence numbers.
-
----
-
-## Test Coverage
-
-| Suite | Tests | Coverage |
-|-------|-------|----------|
-| `MessageValidatorTests` | 4 | Valid commands, unsupported types, duplicate sequence numbers |
-| `ClientSessionTests` | 4 | Hello auth, invalid token, pre-auth rejection, authenticated routing |
-| `PairingServiceTests` | 3 | QR payload format, nonce exchange, invalid nonce rejection |
-| `MockInputInjector` | — | Spy injector for all session tests |
-
-Run tests:
+Run macOS agent tests:
 
 ```bash
 swift test --package-path macos
 ```
 
----
+## Packaging the Mac Agent
 
-## Open in Xcode
-
-```bash
-# macOS agent
-open macos/Package.swift
-
-# iOS app
-open ios/Package.swift
-```
-
----
-
-## What's Next
-
-- **Drag support** — `mouseDown` + move + `mouseUp` sequence for drag-and-drop
-- **Two-finger scroll on touchpad** — detect two-finger gesture on the touchpad area itself
-- **Unpair / Forget iPhone** — button to clear Keychain token and reset pairing from the Mac side
-- **Nonce expiry** — time-bound pairing nonces (e.g. 5-minute window)
-- **Multiple clients** — support more than one paired device
-
-
----
-
-## Planning Documents
-
-| Document | Path |
-|----------|------|
-| Design spec | `docs/superpowers/specs/2026-05-17-aeropoint-mvp-design.md` |
-| iOS frontend plan | `docs/superpowers/plans/2026-05-17-aeropoint-frontend-ios.md` |
-| macOS backend plan | `docs/superpowers/plans/2026-05-17-aeropoint-backend-macos.md` |
-
----
-
-## MVP Split
-
-- **`macos/`** — Swift macOS menu bar agent (SPM executable, macOS 14+)
-- **`windows/`** — Experimental C# Windows system tray agent (.NET 8.0, Windows 10+), not advertised in the current App Store submission
-- **`ios/`** — SwiftUI iPhone app *(planned)*
-
----
-
-## macOS Backend — Current Features
-
-### ✅ Menu Bar Agent Shell
-- Launches as a macOS menu bar app (no Dock icon)
-- Status popover shows live server state, local address, Accessibility permission, and connected client
-- **Grant Access** button triggers the macOS Accessibility permission prompt
-- **Quit** button terminates the agent cleanly
-
-### ✅ Protocol — Message Types
-All input commands are JSON-encoded and validated before execution:
-
-| Type | Fields | Description |
-|------|--------|-------------|
-| `mouse.move` | `seq`, `dx`, `dy` | Relative pointer movement |
-| `mouse.click` | `seq`, `button` | Left or right click |
-| `mouse.scroll` | `seq`, `dx`, `dy` | Two-axis scroll |
-| `keyboard.text` | `seq`, `text` | Unicode text input |
-| `keyboard.key` | `seq`, `key`, `modifiers` | Special keys + modifier combos |
-
-Supported special keys: `Enter`, `Escape`, `Tab`, `Delete`, `ArrowUp`, `ArrowDown`, `ArrowLeft`, `ArrowRight`, `Space`
-
-Supported modifiers: `Command`, `Option`, `Control`, `Shift`
-
-Validation rejects: unknown types, missing fields, invalid buttons/keys/modifiers, duplicate sequence numbers.
-
-### ✅ Pairing
-- Generates a `aeropoint://pair?host=…&port=…&nonce=…&name=…&v=1` URL
-- Renders the URL as a **scannable QR code** in the status popover (CoreImage, no dependencies)
-- iPhone scans QR → exchanges nonce → receives a persistent token
-- QR code disappears once a client successfully authenticates
-
-### ✅ Token Storage (Keychain)
-- Paired client tokens are stored in the macOS **Keychain** (`com.aeropoint.agent`) and survive app restarts
-- `InMemoryPairingTokenStore` available for testing
-
-### ✅ WebSocket Server
-- Binds a local WebSocket server on port **41074** using `Network.framework` (no external dependencies)
-- Accepts one authenticated client at a time; disconnects the previous client on new connection
-- **Authentication flow:** client must send a valid `hello` frame with `clientId` + `token` before any input commands are accepted
-- Responds with `hello_ok`, `ack`, or `error` JSON frames
-- Detects client disconnect and automatically re-shows the pairing QR code
-
-### ✅ Accessibility Permission Handling
-- Checks `AXIsProcessTrusted()` on launch
-- Reports permission state ("Granted" / "Missing") in the popover
-- Can trigger the system permission prompt via the **Grant Access** button
-
-### ✅ Mouse Injection (Quartz / CoreGraphics)
-- Relative mouse movement (clamped to ±200 px per event to prevent runaway input)
-- Left and right click (down + up events)
-- Two-axis scroll wheel
-
-### ✅ Keyboard Injection (Quartz / CoreGraphics)
-- Unicode text input via `CGEventKeyboardSetUnicodeString`
-- Special keys with full modifier support (`Command+Space`, `Command+Tab`, etc.)
-
----
-
-## Test Coverage
-
-| Suite | Tests | Coverage |
-|-------|-------|----------|
-| `MessageValidatorTests` | 4 | Valid commands, unsupported types, duplicate sequence numbers |
-| `ClientSessionTests` | 4 | Hello auth, invalid token, pre-auth rejection, authenticated routing |
-| `PairingServiceTests` | 3 | QR payload format, nonce exchange, invalid nonce rejection |
-| `MockInputInjector` | — | Spy injector for all session tests |
-
-Run tests:
+For local unsigned packaging:
 
 ```bash
-swift test --package-path /Users/wany/Desktop/test/AeroPoint/macos
+scripts/package_macos_agent.sh
 ```
 
----
-
-## Open in Xcode
+For public distribution, set the Developer ID and notarization environment variables described in [docs/desktop-agent-packaging.md](docs/desktop-agent-packaging.md), then run:
 
 ```bash
-open /Users/wany/Desktop/test/AeroPoint/macos/Package.swift
+AEROPOINT_VERSION=0.1 scripts/package_macos_agent.sh
 ```
-
-Build from command line:
-
-```bash
-xcodebuild -scheme AeroPointAgent -destination 'platform=macOS' build
-```
-
----
-
-## What's Next
-
-- **`ios/`** — SwiftUI iPhone app: pairing scanner, touchpad, keyboard, WebSocket client
-- **Unpair action** — "Forget iPhone" button to clear the stored Keychain token and reset pairing
-- **Multi-client nonce expiry** — time-bound nonces for pairing sessions
-- **Drag support** — mouseDown + move + mouseUp sequence for drag operations
-- **End-to-end QA** — connect real iPhone app, verify pairing → control flow over Wi-Fi

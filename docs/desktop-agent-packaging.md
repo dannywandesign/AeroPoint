@@ -15,12 +15,12 @@ Prerequisites:
 - macOS packaging requires Xcode command line tools and Swift.
 The scripts write release files under `dist/`:
 
-- `dist/AeroPointAgent-macos-1.0.0.zip`
+- `dist/AeroPointAgent-macos-0.1.zip`
 
 Use `AEROPOINT_VERSION` to change artifact names:
 
 ```bash
-AEROPOINT_VERSION=1.0.1 scripts/package_macos_agent.sh
+AEROPOINT_VERSION=0.1 scripts/package_macos_agent.sh
 ```
 
 ## macOS Signing and Notarization
@@ -47,12 +47,12 @@ GitHub can host the placeholder URLs.
 
 Recommended setup:
 
-1. Create a GitHub Release, for example `v1.0.0`.
+1. Create a GitHub Release, for example `v0.1`.
 2. Upload the generated Mac zip file as a release asset.
 3. Use release asset URLs in App Review notes:
 
 ```text
-https://github.com/dannywandesign/AeroPoint/releases/download/v1.0.0/AeroPointAgent-macos-1.0.0.zip
+https://github.com/dannywandesign/AeroPoint/releases/download/v0.1/AeroPointAgent-macos-0.1.zip
 ```
 
 For the Privacy Policy and Support URL, GitHub Pages is better than raw repository links.
