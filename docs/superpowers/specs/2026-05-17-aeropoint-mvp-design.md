@@ -6,7 +6,7 @@ AeroPoint is a same-Wi-Fi iPhone app for controlling a Mac without a physical ke
 
 ## Scope
 
-The first version is Mac-first and local-network only. It does not include cloud accounts, internet relay access, Windows support, gesture air-mouse control, screen streaming, file transfer, or multi-computer fleet management.
+The first version is Mac-first and local-network only. It does not include cloud accounts, internet relay access, gesture air-mouse control, screen streaming, file transfer, or multi-computer fleet management.
 
 ## Architecture
 
@@ -92,7 +92,6 @@ End-to-end testing can start with a local simulator client before the full iPhon
 Planned later additions:
 
 - Gesture air-mouse mode using iPhone motion sensors.
-- Windows desktop agent.
 - Internet relay mode.
 - Multiple saved computers.
 - Custom shortcuts and app-specific control layouts.

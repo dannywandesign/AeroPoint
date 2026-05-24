@@ -9,9 +9,7 @@ DerivedData/
 *.xcuserdata/
 *.xcuserstate
 
-# Windows/dotnet
-windows/bin/
-windows/obj/
+# Build logs
 *.log
 
 # Release packaging output

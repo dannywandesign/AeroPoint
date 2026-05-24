@@ -57,6 +57,4 @@ Before submission, package the Mac agent so App Review and users can install it 
 
 - macOS: sign and notarize the agent, then host a downloadable `.dmg` or `.zip`.
 
-Do not claim Windows or PC support in App Store metadata for this submission. The repository may contain experimental Windows code, but the public product description, screenshots, review notes, and support page should describe Mac support only.
-
 See `docs/desktop-agent-packaging.md` for packaging commands and GitHub hosting steps.

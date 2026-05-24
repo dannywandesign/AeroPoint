@@ -65,7 +65,3 @@ https://dannywandesign.github.io/AeroPoint/support/
 ```
 
 Raw GitHub file URLs can work because they are public, but GitHub Pages looks cleaner and is less likely to confuse reviewers.
-
-## Future Windows Support
-
-The repository contains experimental Windows agent code and `scripts/package_windows_agent.sh`, but Windows support is not advertised in the current App Store submission. Do not include Windows release assets or PC wording in App Store metadata until the Windows agent is ready, signed, hosted, and reviewable.
