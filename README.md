@@ -85,6 +85,26 @@ The iOS app requires the AeroPoint Mac agent on the same local network. Before s
 
 Use [docs/APP_STORE_SUBMISSION.md](docs/APP_STORE_SUBMISSION.md) for App Review notes and metadata guidance. Use [docs/desktop-agent-packaging.md](docs/desktop-agent-packaging.md) for Mac agent packaging.
 
+### App Store Positioning
+
+Remote mouse and keyboard apps already exist on the App Store, including apps such as Remote Mouse and Mobile Mouse. AeroPoint should not be positioned as the first or only app in this category.
+
+AeroPoint's App Store positioning should focus on its local-first Mac workflow:
+
+- Mac-focused remote mouse and keyboard control.
+- Local Wi-Fi connection only.
+- No cloud account.
+- No internet relay.
+- No analytics, ads, or tracking SDKs.
+- QR/manual pairing with credentials stored locally.
+- Clear in-app privacy and data safety explanation.
+
+Suggested positioning:
+
+```text
+AeroPoint is a privacy-first local Wi-Fi remote mouse and keyboard for Mac. It requires no cloud account, no analytics, and no external servers. Pairing is QR/manual, credentials stay on-device, and all input traffic stays on the user's local network.
+```
+
 ## Project Structure
 
 | Directory | Description |
