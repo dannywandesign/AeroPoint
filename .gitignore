@@ -8,3 +8,8 @@
 DerivedData/
 *.xcuserdata/
 *.xcuserstate
+
+# Windows/dotnet
+windows/bin/
+windows/obj/
+*.log
