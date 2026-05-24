@@ -107,12 +107,19 @@ struct MultiTouchTouchpadRepresentable: UIViewRepresentable {
         let view = UIView()
         view.backgroundColor = .clear
         view.isOpaque = false
+        view.isMultipleTouchEnabled = true
 
-        // Pan gesture for moving and dragging
-        let pan = UIPanGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handlePan(_:)))
-        pan.minimumNumberOfTouches = 1
-        pan.maximumNumberOfTouches = 2
-        view.addGestureRecognizer(pan)
+        // 1-finger pan → mouse move
+        let movePan = UIPanGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleMovePan(_:)))
+        movePan.minimumNumberOfTouches = 1
+        movePan.maximumNumberOfTouches = 1
+        view.addGestureRecognizer(movePan)
+
+        // 2-finger pan → drag and drop
+        let dragPan = UIPanGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleDragPan(_:)))
+        dragPan.minimumNumberOfTouches = 2
+        dragPan.maximumNumberOfTouches = 2
+        view.addGestureRecognizer(dragPan)
 
         // Single finger tap -> Left Click
         let singleTap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleSingleTap(_:)))
@@ -126,8 +133,9 @@ struct MultiTouchTouchpadRepresentable: UIViewRepresentable {
         twoFingerTap.numberOfTouchesRequired = 2
         view.addGestureRecognizer(twoFingerTap)
 
-        // Single tap should wait for two-finger tap to fail to avoid conflict
+        // Prevent gesture conflicts
         singleTap.require(toFail: twoFingerTap)
+        dragPan.require(toFail: twoFingerTap)
 
         return view
     }
@@ -152,9 +160,8 @@ struct MultiTouchTouchpadRepresentable: UIViewRepresentable {
         var onDragStateChanged: ((Bool) -> Void)?
         var onDragStarted: ((CGPoint) -> Void)?
 
-        private var lastLocation: CGPoint = .zero
-        private var isDragging = false
-        private var lastTouchesCount = 0
+        private var lastMoveLocation: CGPoint = .zero
+        private var lastDragLocation: CGPoint = .zero
 
         init(connection: AeroPointConnection, moveSensitivity: Double) {
             self.connection = connection
@@ -179,59 +186,54 @@ struct MultiTouchTouchpadRepresentable: UIViewRepresentable {
             onDragStarted?(location)
         }
 
-        @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
+        @objc func handleMovePan(_ gesture: UIPanGestureRecognizer) {
             guard let view = gesture.view else { return }
             let location = gesture.location(in: view)
-            let touchesCount = gesture.numberOfTouches
 
             switch gesture.state {
             case .began:
-                lastLocation = location
-                lastTouchesCount = touchesCount
-                if touchesCount == 2 {
-                    isDragging = true
-                    connection.send(.mouseDown(button: .left))
-                    onDragStateChanged?(true)
-                    onDragStarted?(location)
-                } else {
-                    isDragging = false
-                    onDragStateChanged?(false)
-                }
+                lastMoveLocation = location
 
             case .changed:
-                // If the number of active touches changed, reset baseline to prevent cursor teleportation
-                if touchesCount != lastTouchesCount {
-                    lastLocation = location
-                    lastTouchesCount = touchesCount
-                }
-                
-                let dx = (location.x - lastLocation.x) * moveSensitivity
-                let dy = (location.y - lastLocation.y) * moveSensitivity
+                let dx = (location.x - lastMoveLocation.x) * moveSensitivity
+                let dy = (location.y - lastMoveLocation.y) * moveSensitivity
                 
                 if dx != 0 || dy != 0 {
                     connection.send(.mouseMove(dx: dx, dy: dy))
                 }
-                lastLocation = location
-
-                // Dynamic touch additions and removals during active pan
-                if !isDragging && touchesCount == 2 {
-                    isDragging = true
-                    connection.send(.mouseDown(button: .left))
-                    onDragStateChanged?(true)
-                    onDragStarted?(location)
-                } else if isDragging && touchesCount < 2 {
-                    isDragging = false
-                    connection.send(.mouseUp(button: .left))
-                    onDragStateChanged?(false)
-                }
+                lastMoveLocation = location
 
             case .ended, .cancelled, .failed:
-                if isDragging {
-                    isDragging = false
-                    connection.send(.mouseUp(button: .left))
-                    onDragStateChanged?(false)
+                break
+
+            default:
+                break
+            }
+        }
+
+        @objc func handleDragPan(_ gesture: UIPanGestureRecognizer) {
+            guard let view = gesture.view else { return }
+            let location = gesture.location(in: view)
+
+            switch gesture.state {
+            case .began:
+                lastDragLocation = location
+                connection.send(.mouseDown(button: .left))
+                onDragStateChanged?(true)
+                onDragStarted?(location)
+
+            case .changed:
+                let dx = (location.x - lastDragLocation.x) * moveSensitivity
+                let dy = (location.y - lastDragLocation.y) * moveSensitivity
+                
+                if dx != 0 || dy != 0 {
+                    connection.send(.mouseMove(dx: dx, dy: dy))
                 }
-                lastTouchesCount = 0
+                lastDragLocation = location
+
+            case .ended, .cancelled, .failed:
+                connection.send(.mouseUp(button: .left))
+                onDragStateChanged?(false)
 
             default:
                 break

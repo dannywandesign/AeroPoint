@@ -63,25 +63,14 @@ public struct PairingView: View {
                         Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundStyle(Color(red: 99/255, green: 102/255, blue: 241/255))
-                            .padding(8)
-                            .background(isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08), in: Circle())
                     }
-                    .buttonStyle(.plain)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { showManual.toggle() }) {
                         Text(showManual ? "Scan QR" : "Manual")
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundStyle(Color(red: 99/255, green: 102/255, blue: 241/255))
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 6)
-                            .background(isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08), in: Capsule())
-                            .overlay(
-                                Capsule()
-                                    .stroke(isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.05), lineWidth: 1)
-                            )
                     }
-                    .buttonStyle(.plain)
                 }
             }
             .sheet(isPresented: $showPrivacyPolicy) {
