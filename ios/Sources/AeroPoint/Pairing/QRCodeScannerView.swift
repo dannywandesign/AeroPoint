@@ -50,10 +50,31 @@ public final class ScannerViewController: UIViewController, AVCaptureMetadataOut
     }
 
     private func setupSession() {
-        guard AVCaptureDevice.authorizationStatus(for: .video) != .denied else {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        switch status {
+        case .authorized:
+            startCameraSession()
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                DispatchQueue.main.async {
+                    if granted {
+                        self?.startCameraSession()
+                    } else {
+                        self?.showPermissionDenied()
+                    }
+                }
+            }
+        case .denied:
             showPermissionDenied()
-            return
+        case .restricted:
+            showPermissionRestricted()
+        @unknown default:
+            showPermissionDenied()
         }
+    }
+
+    private func startCameraSession() {
+        guard captureSession == nil else { return }
 
         let session = AVCaptureSession()
         guard let device = AVCaptureDevice.default(for: .video),
@@ -76,6 +97,22 @@ public final class ScannerViewController: UIViewController, AVCaptureMetadataOut
 
         captureSession = session
         DispatchQueue.global(qos: .userInitiated).async { session.startRunning() }
+    }
+
+    private func showPermissionRestricted() {
+        let label = UILabel()
+        label.text = "Camera access is restricted on this device."
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.textColor = .white
+        label.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(label)
+        NSLayoutConstraint.activate([
+            label.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            label.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            label.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            label.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24)
+        ])
     }
 
     public func metadataOutput(

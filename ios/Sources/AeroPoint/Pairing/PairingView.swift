@@ -12,6 +12,7 @@ public struct PairingView: View {
     @State private var manualPort = "41074"
     @State private var manualNonce = ""
     @State private var status = ""
+    @State private var showPrivacyPolicy = false
     @AppStorage("isDarkMode") private var isDarkMode = false
 
     public init(connection: AeroPointConnection, store: PairedMacStore, onPaired: @escaping (PairedMac) -> Void) {
@@ -81,6 +82,9 @@ public struct PairingView: View {
                     }
                 }
             }
+            .sheet(isPresented: $showPrivacyPolicy) {
+                PrivacyPolicyView()
+            }
         }
     }
 
@@ -120,6 +124,16 @@ public struct PairingView: View {
                             .foregroundStyle(.yellow)
                             .padding(.top, 4)
                     }
+
+                    Button(action: { showPrivacyPolicy = true }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "hand.raised.fill")
+                            Text("Privacy Policy")
+                        }
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(red: 99/255, green: 102/255, blue: 241/255))
+                    }
+                    .padding(.top, 8)
                 }
                 .padding(.vertical, 24)
                 .frame(maxWidth: .infinity)
@@ -177,7 +191,7 @@ public struct PairingView: View {
                         TextField("Enter the pairing nonce", text: $manualNonce)
                             .textFieldStyle(GlassInputStyle(isDarkMode: isDarkMode))
                             .autocorrectionDisabled()
-                            .autocapitalization(.none)
+                            .textInputAutocapitalization(.never)
                             .font(.system(.body, design: .monospaced))
                         Text("Locate the pairing code or check your Mac console log.")
                             .font(.system(.caption2, design: .rounded))
@@ -219,6 +233,16 @@ public struct PairingView: View {
                         .stroke(isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08), lineWidth: 1)
                 )
                 .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
+
+                Button(action: { showPrivacyPolicy = true }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "hand.raised.fill")
+                        Text("Privacy Policy")
+                    }
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Color(red: 99/255, green: 102/255, blue: 241/255))
+                }
+                .padding(.top, 8)
             }
             .padding(20)
         }

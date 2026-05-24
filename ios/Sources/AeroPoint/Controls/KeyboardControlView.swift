@@ -61,7 +61,7 @@ public struct KeyboardControlView: View {
                             .stroke(textStroke, lineWidth: 1)
                     )
                     .autocorrectionDisabled()
-                    .autocapitalization(.none)
+                    .textInputAutocapitalization(.never)
                     .focused($textFieldFocused)
                     .onSubmit {
                         sendText()
