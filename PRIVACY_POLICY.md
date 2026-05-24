@@ -7,10 +7,11 @@ AeroPoint is built with a **local-first** and **zero-collection** philosophy. Th
 ---
 
 ## 1. Zero Data Collection & Processing
-AeroPoint **does not collect, store, or share any personal information, telemetry, usage analytics, or crash logs**. All functionality runs completely offline and locally on your devices.
+AeroPoint **does not collect, store, transmit, sell, or share any personal information, telemetry, usage analytics, crash logs, advertising identifiers, or tracking data**. All functionality runs locally on your devices.
 
-- **No Server Storage:** We do not host or use any cloud servers, databases, or accounts. 
+- **No Server Storage:** We do not host or use any cloud servers, databases, or accounts.
 - **No Third-Party Analytics:** The app contains no SDKs for tracking, advertisements, or user behavior profiling.
+- **No Tracking:** AeroPoint does not link app activity with third-party data for advertising, measurement, or data broker purposes.
 
 ## 2. On-Device Device Permissions & Usage
 
@@ -24,11 +25,19 @@ To function as a remote control, AeroPoint requires specific iOS permissions, wh
 - **Purpose:** Used to discover and connect to the AeroPoint agent running on your Mac or PC via a local WebSocket connection (`ws://`).
 - **Privacy:** All communication remains strictly within your home or office local Wi-Fi network. No network packets or control sequences are relayed over the public Internet.
 
-### C. Storage & UserDefaults
-- **Purpose:** Storing user interface configurations (e.g., Dark Mode preferences) and pairing records (e.g., IP address, port, and security nonces).
-- **Privacy:** Pairing credentials and connection details are stored securely on your local device.
+### C. Local Storage, Keychain & UserDefaults
+- **Purpose:** Stores user interface preferences, paired computer connection details (IP address, port, and computer name), and pairing credentials.
+- **Privacy:** Pairing credentials are stored in the device Keychain. Non-sensitive connection details and preferences are stored locally in UserDefaults. This data is not sent to AeroPoint servers because no AeroPoint servers are used.
+
+## 3. Data Retention, Deletion & Consent
+
+AeroPoint retains pairing details only on your own device so it can reconnect to your computer. You can delete local pairing data at any time by using **Disconnect** in the app, deleting the app from your device, or clearing the paired device from the companion agent where available.
+
+Camera and local network permissions can be revoked at any time in iOS Settings. If permission is revoked, QR pairing or local network control may stop working until permission is granted again.
+
+Because AeroPoint does not collect user data, there is no server-side account, profile, or hosted user data to request, export, or delete.
 
 ---
 
-## 3. Contact & Support
-Since AeroPoint is open-source and run locally, you can audit the source code in the repository. For questions, bug reports, or feature requests, please open an issue in the project's repository.
+## 4. Contact & Support
+For questions, bug reports, privacy requests, or feature requests, contact the developer through the support URL listed on AeroPoint's App Store product page.

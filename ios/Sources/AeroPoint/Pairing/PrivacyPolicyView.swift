@@ -94,7 +94,7 @@ public struct PrivacyPolicyView: View {
                             PolicyCard(
                                 icon: "lock.shield.fill",
                                 title: "Secure Local Storage",
-                                description: "Pairing credentials and connection profiles are stored directly on your device using secure storage (Keychain and UserDefaults).",
+                                description: "Pairing credentials are stored in Keychain. Connection details and preferences are stored locally in UserDefaults and are not sent to AeroPoint servers.",
                                 gradientColors: [Color.purple, Color.indigo]
                             )
 
@@ -104,10 +104,17 @@ public struct PrivacyPolicyView: View {
                                 description: "The camera is solely utilized to scan the pairing QR code displayed by the computer agent. Video frames are processed locally on-device and are never saved or shared.",
                                 gradientColors: [Color.green, Color.teal]
                             )
+
+                            PolicyCard(
+                                icon: "trash.fill",
+                                title: "Delete Local Pairing Data",
+                                description: "Use Disconnect to clear the paired computer from this device. You can also revoke camera and local network permissions at any time in iOS Settings.",
+                                gradientColors: [Color.gray, Color.blue]
+                            )
                         }
                         .padding(.horizontal, 20)
 
-                        Text("For support or inquiries regarding privacy, please contact your AeroPoint administrator or visit the project's repository.")
+                        Text("For support or privacy inquiries, use the support URL listed on AeroPoint's App Store product page.")
                             .font(.system(.caption, design: .rounded))
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)

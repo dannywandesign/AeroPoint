@@ -38,6 +38,12 @@ Open `ios/Package.swift` in Xcode, select your iPhone as the run target, and hit
 
 Both devices must be on the **same Wi-Fi network**.
 
+## App Store Submission
+
+The iOS app requires the AeroPoint companion agent on a user-owned Mac or Windows PC on the same local network. Before submitting to App Review, publish signed desktop agent downloads, a support page, and the privacy policy.
+
+Use `docs/APP_STORE_SUBMISSION.md` for App Review notes, privacy label guidance, and the metadata checklist.
+
 ---
 
 ## Project Structure
