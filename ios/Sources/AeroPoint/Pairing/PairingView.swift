@@ -66,6 +66,7 @@ public struct PairingView: View {
                             .padding(8)
                             .background(isDarkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.08), in: Circle())
                     }
+                    .buttonStyle(.plain)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: { showManual.toggle() }) {
@@ -80,6 +81,7 @@ public struct PairingView: View {
                                     .stroke(isDarkMode ? Color.white.opacity(0.05) : Color.black.opacity(0.05), lineWidth: 1)
                             )
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .sheet(isPresented: $showPrivacyPolicy) {
