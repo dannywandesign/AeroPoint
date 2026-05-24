@@ -13,3 +13,6 @@ DerivedData/
 windows/bin/
 windows/obj/
 *.log
+
+# Release packaging output
+dist/

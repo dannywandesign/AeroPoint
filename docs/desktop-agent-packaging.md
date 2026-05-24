@@ -1,0 +1,79 @@
+# Desktop Agent Packaging
+
+This project ships an iOS app plus separate desktop companion agents. App Review needs downloadable desktop agents because the iOS app cannot demonstrate its core mouse and keyboard controls without a user-owned Mac or Windows PC on the same local network.
+
+## Build Release Artifacts
+
+From the repository root:
+
+```bash
+scripts/package_macos_agent.sh
+scripts/package_windows_agent.sh
+```
+
+Prerequisites:
+
+- macOS packaging requires Xcode command line tools and Swift.
+- Windows packaging requires the .NET 8 SDK. On macOS, the script uses `EnableWindowsTargeting=true` so it can publish a Windows build after the SDK is installed.
+
+The scripts write release files under `dist/`:
+
+- `dist/AeroPointAgent-macos-1.0.0.zip`
+- `dist/AeroPointAgent-windows-win-x64-1.0.0.zip`
+
+Use `AEROPOINT_VERSION` to change artifact names:
+
+```bash
+AEROPOINT_VERSION=1.0.1 scripts/package_macos_agent.sh
+AEROPOINT_VERSION=1.0.1 scripts/package_windows_agent.sh
+```
+
+## macOS Signing and Notarization
+
+Unsigned macOS apps may be blocked by Gatekeeper. For App Review and public users, sign and notarize the Mac agent.
+
+Set these environment variables before running the macOS packaging script:
+
+```bash
+export DEVELOPER_ID_APPLICATION="Developer ID Application: Your Name (TEAMID)"
+export APPLE_ID="you@example.com"
+export APPLE_TEAM_ID="TEAMID"
+export APPLE_APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx"
+scripts/package_macos_agent.sh
+```
+
+The script signs the `.app`, submits it to Apple notarization, staples the notarization ticket, and creates a zip file.
+
+If you only set `DEVELOPER_ID_APPLICATION`, the script signs but does not notarize.
+
+## Windows Signing
+
+The Windows script creates a self-contained `win-x64` build. For public distribution, sign `AeroPointAgent.exe` on Windows with a code-signing certificate before uploading the zip. A typical signing step uses Microsoft's `signtool.exe`.
+
+If you do not have a Windows signing certificate yet, you can still provide the zip to App Review, but Windows SmartScreen may warn users.
+
+## GitHub URLs
+
+GitHub can host the placeholder URLs.
+
+Recommended setup:
+
+1. Create a GitHub Release, for example `v1.0.0`.
+2. Upload the generated zip files as release assets.
+3. Use release asset URLs in App Review notes:
+
+```text
+https://github.com/dannywandesign/AeroPoint/releases/download/v1.0.0/AeroPointAgent-macos-1.0.0.zip
+https://github.com/dannywandesign/AeroPoint/releases/download/v1.0.0/AeroPointAgent-windows-win-x64-1.0.0.zip
+```
+
+For the Privacy Policy and Support URL, GitHub Pages is better than raw repository links.
+
+Suggested URLs after enabling Pages for the `docs/` folder:
+
+```text
+https://dannywandesign.github.io/AeroPoint/privacy/
+https://dannywandesign.github.io/AeroPoint/support/
+```
+
+Raw GitHub file URLs can work because they are public, but GitHub Pages looks cleaner and is less likely to confuse reviewers.

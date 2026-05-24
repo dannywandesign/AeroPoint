@@ -42,7 +42,7 @@ Both devices must be on the **same Wi-Fi network**.
 
 The iOS app requires the AeroPoint companion agent on a user-owned Mac or Windows PC on the same local network. Before submitting to App Review, publish signed desktop agent downloads, a support page, and the privacy policy.
 
-Use `docs/APP_STORE_SUBMISSION.md` for App Review notes, privacy label guidance, and the metadata checklist.
+Use `docs/APP_STORE_SUBMISSION.md` for App Review notes, privacy label guidance, and the metadata checklist. Use `docs/desktop-agent-packaging.md` for desktop agent packaging commands.
 
 ---
 

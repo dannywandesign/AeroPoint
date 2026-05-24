@@ -18,12 +18,12 @@ The app only connects to the AeroPoint companion agent on the same local Wi-Fi o
 
 ### Companion Agent Download Links
 
-Replace these placeholders before submitting:
+Replace these placeholders before submitting. GitHub Releases can host these files:
 
-- macOS agent: `https://example.com/aeropoint-agent-macos`
-- Windows agent: `https://example.com/aeropoint-agent-windows`
-- Support page: `https://example.com/aeropoint-support`
-- Privacy policy: `https://example.com/aeropoint-privacy`
+- macOS agent: `https://github.com/dannywandesign/AeroPoint/releases/download/v1.0.0/AeroPointAgent-macos-1.0.0.zip`
+- Windows agent: `https://github.com/dannywandesign/AeroPoint/releases/download/v1.0.0/AeroPointAgent-windows-win-x64-1.0.0.zip`
+- Support page: `https://dannywandesign.github.io/AeroPoint/support/`
+- Privacy policy: `https://dannywandesign.github.io/AeroPoint/privacy/`
 
 ## Privacy Nutrition Label
 
@@ -60,3 +60,5 @@ Before submission, package the desktop agents so App Review and users can instal
 - Windows: sign the executable or installer when possible, then host a downloadable installer or `.zip`.
 
 Do not claim Windows support in App Store metadata unless the Windows agent download is available and works for reviewers.
+
+See `docs/desktop-agent-packaging.md` for packaging commands and GitHub hosting steps.
