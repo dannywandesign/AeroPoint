@@ -1,7 +1,7 @@
 #if canImport(UIKit)
 import SwiftUI
 
-/// Shows the QR scanner and handles the pairing handshake with the Mac/Windows agent.
+/// Shows the QR scanner and handles the pairing handshake with the Mac agent.
 public struct PairingView: View {
     let connection: AeroPointConnection
     let store: PairedMacStore
@@ -55,7 +55,7 @@ public struct PairingView: View {
                 }
             }
             .animation(.spring(response: 0.4, dampingFraction: 0.8), value: showManual)
-            .navigationTitle("Pair with PC")
+            .navigationTitle("Pair with Mac")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -103,7 +103,7 @@ public struct PairingView: View {
                         .font(.system(.headline, design: .rounded))
                         .foregroundStyle(.primary)
 
-                    Text("Point your camera at the QR code in the AeroPoint menu bar or system tray popover")
+                    Text("Point your camera at the QR code in the AeroPoint menu bar popover")
                         .multilineTextAlignment(.center)
                         .font(.system(.subheadline, design: .rounded))
                         .foregroundStyle(.secondary)
@@ -155,7 +155,7 @@ public struct PairingView: View {
                         .foregroundStyle(.primary)
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Mac or PC IP Address")
+                        Text("Mac IP Address")
                             .font(.system(.caption, design: .rounded))
                             .foregroundStyle(.secondary)
                             .fontWeight(.semibold)
@@ -279,7 +279,7 @@ public struct PairingView: View {
                 .font(.system(size: 36, weight: .bold, design: .rounded))
                 .foregroundStyle(.primary)
             
-            Text("Same-Wi-Fi remote control for your Mac and Windows PC.")
+            Text("Same-Wi-Fi remote control for your Mac.")
                 .font(.system(.subheadline, design: .rounded))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -309,7 +309,7 @@ public struct PairingView: View {
             clientId: UUID().uuidString,
             host: manualHost,
             port: port,
-            serverName: "PC (\(manualHost))",
+            serverName: "Mac (\(manualHost))",
             token: manualNonce
         )
         finishPairing(mac)

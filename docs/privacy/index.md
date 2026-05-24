@@ -2,7 +2,7 @@
 
 **Last Updated:** May 2026
 
-AeroPoint is built with a local-first and zero-collection philosophy. This Privacy Policy details how the AeroPoint iOS companion application and its desktop agents handle your data.
+AeroPoint is built with a local-first and zero-collection philosophy. This Privacy Policy details how the AeroPoint iOS companion application and Mac agent handle your data.
 
 ## 1. Zero Data Collection & Processing
 
@@ -23,7 +23,7 @@ To function as a remote control, AeroPoint requires specific iOS permissions, wh
 
 ### B. Local Network Access
 
-- Purpose: Used to discover and connect to the AeroPoint agent running on your Mac or PC via a local WebSocket connection.
+- Purpose: Used to discover and connect to the AeroPoint agent running on your Mac via a local WebSocket connection.
 - Privacy: All communication remains strictly within your home or office local Wi-Fi network. No network packets or control sequences are relayed over the public Internet.
 
 ### C. Local Storage, Keychain & UserDefaults

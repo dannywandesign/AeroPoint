@@ -1,11 +1,11 @@
 # AeroPoint Support
 
-AeroPoint is a local-network remote mouse and keyboard for a user-owned Mac or Windows PC.
+AeroPoint is a local-network remote mouse and keyboard for a user-owned Mac.
 
 ## Requirements
 
 - iPhone or iPad running iOS/iPadOS 17 or later.
-- AeroPoint companion agent installed on your Mac or Windows PC.
+- AeroPoint Mac companion agent installed on your Mac.
 - Both devices connected to the same Wi-Fi or local network.
 - macOS users must grant Accessibility permission to the desktop agent.
 

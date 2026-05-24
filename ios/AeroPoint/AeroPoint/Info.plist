@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>AeroPoint needs access to your local network to discover and connect to the companion agent running on your Mac or PC.</string>
+	<string>AeroPoint needs access to your local network to discover and connect to the companion agent running on your Mac.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
